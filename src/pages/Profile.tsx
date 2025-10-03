@@ -8,20 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { 
-  Home, 
-  MessageSquare, 
-  Award, 
-  Image as ImageIcon, 
-  Music,
-  Trophy,
-  Send,
-  Sparkles,
-  Star,
-  Heart,
-  Gift,
-  PlusCircle
-} from "lucide-react";
+import { Chrome as Home, MessageSquare, Award, Image as ImageIcon, Music, Trophy, Send, Sparkles, Star, Heart, Gift, CirclePlus as PlusCircle } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
 
 type ProfileData = Tables<"profiles"> & {
