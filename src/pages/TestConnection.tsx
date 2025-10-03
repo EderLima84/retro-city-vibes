@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 const TestConnection = () => {
   const [connectionStatus, setConnectionStatus] = useState<string>("Verificando...");
   const [error, setError] = useState<string | null>(null);
-  const { signInWithCredentials } = useAuth();
+  const navigate = useNavigate();
 
   const expectedTables = [
     'profiles',
@@ -77,8 +77,11 @@ const TestConnection = () => {
             <Button onClick={testConnection} variant="default">
               Testar Novamente
             </Button>
-            <Button onClick={() => signInWithCredentials()} variant="secondary">
-              Login com Credenciais Fornecidas
+            <Button onClick={() => navigate('/auth')} variant="secondary">
+              Ir para Login
+            </Button>
+            <Button onClick={() => navigate('/')} variant="outline">
+              Voltar ao Início
             </Button>
           </div>
         </div>

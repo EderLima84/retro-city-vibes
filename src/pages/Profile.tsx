@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
 
-type Profile = Tables<"profiles"> & {
+type ProfileData = Tables<"profiles"> & {
   avatar_url?: string;
   cover_photo_url?: string;
 };
@@ -34,16 +34,16 @@ type Scrap = Tables<"scraps"> & {
 type Testimonial = Tables<"testimonials"> & {
   from_profile: Tables<"profiles">;
 };
-type Achievement = Tables<"user_achievements"> & {
+type UserAchievement = Tables<"user_achievements"> & {
   achievement: Tables<"achievements">;
 };
 
 const Profile = () => {
   const { user, loading } = useAuth();
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<ProfileData | null>(null);
   const [scraps, setScraps] = useState<Scrap[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [achievements, setAchievements] = useState<UserAchievement[]>([]);
   const [newScrap, setNewScrap] = useState("");
   const [loadingData, setLoadingData] = useState(true);
 
