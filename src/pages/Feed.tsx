@@ -428,11 +428,11 @@ const Feed = () => {
           />
           
           {imagePreview && (
-            <div className="relative mb-4">
+            <div className="relative mb-4 bg-muted rounded-lg">
               <img 
                 src={imagePreview} 
                 alt="Preview" 
-                className="max-h-64 rounded-lg object-cover w-full"
+                className="max-h-96 rounded-lg object-contain w-full"
               />
               <Button
                 variant="destructive"
@@ -520,11 +520,13 @@ const Feed = () => {
                     )}
                     
                     {post.image_url && (
-                      <img 
-                        src={post.image_url} 
-                        alt="Post image" 
-                        className="rounded-lg max-h-96 w-full object-cover mb-4"
-                      />
+                      <div className="bg-muted rounded-lg mb-4">
+                        <img 
+                          src={post.image_url} 
+                          alt="Post image" 
+                          className="rounded-lg max-h-[500px] w-full object-contain"
+                        />
+                      </div>
                     )}
                     
                     {/* Interações */}
