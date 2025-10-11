@@ -7,10 +7,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Shield, AlertTriangle, CheckCircle, XCircle, Eye } from "lucide-react";
+import { Shield, AlertTriangle, CheckCircle, XCircle, Eye, Plus } from "lucide-react";
 import { useState } from "react";
 import { format } from "date-fns";
 
@@ -35,6 +38,12 @@ const Moderation = () => {
   const queryClient = useQueryClient();
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [moderatorNotes, setModeratorNotes] = useState("");
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [newReport, setNewReport] = useState({
+    reportType: "post" as "post" | "comment" | "user" | "video",
+    itemId: "",
+    reason: "",
+  });
 
   // Check if user is moderator or admin
   const { data: userRole } = useQuery({
@@ -51,14 +60,25 @@ const Moderation = () => {
     enabled: !!user,
   });
 
-  // Fetch pending reports
+  // Fetch reports based on user role
   const { data: reports = [], isLoading: reportsLoading } = useQuery({
-    queryKey: ["reports"],
+    queryKey: ["reports", user?.id, userRole],
     queryFn: async () => {
-      const { data: reportsData, error } = await supabase
+      if (!user) return [];
+
+      const isModerator = userRole === "admin" || userRole === "moderator";
+      
+      // Moderators see all reports, regular users see only their own
+      const query = supabase
         .from("reports")
         .select("*")
         .order("created_at", { ascending: false });
+
+      if (!isModerator) {
+        query.eq("reporter_id", user.id);
+      }
+
+      const { data: reportsData, error } = await query;
 
       if (error) throw error;
 
@@ -78,7 +98,32 @@ const Moderation = () => {
         },
       })) as Report[];
     },
-    enabled: !!user && (userRole === "admin" || userRole === "moderator"),
+    enabled: !!user,
+  });
+
+  const createReportMutation = useMutation({
+    mutationFn: async (reportData: { reportType: string; itemId: string; reason: string }) => {
+      if (!user?.id) throw new Error("User not authenticated");
+      
+      const { error } = await supabase.from("reports").insert({
+        reporter_id: user.id,
+        reported_item_id: reportData.itemId,
+        report_type: reportData.reportType as "post" | "comment" | "user" | "video",
+        reason: reportData.reason,
+        status: "pending",
+      });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reports"] });
+      toast.success("Denúncia enviada com sucesso");
+      setCreateDialogOpen(false);
+      setNewReport({ reportType: "post", itemId: "", reason: "" });
+    },
+    onError: () => {
+      toast.error("Erro ao enviar denúncia");
+    },
   });
 
   const updateReportMutation = useMutation({
@@ -146,19 +191,7 @@ const Moderation = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  if (userRole !== "admin" && userRole !== "moderator") {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="p-8 text-center">
-          <AlertTriangle className="w-16 h-16 text-destructive mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-2">Acesso Negado</h2>
-          <p className="text-muted-foreground">
-            Você não tem permissão para acessar a Delegacia.
-          </p>
-        </Card>
-      </div>
-    );
-  }
+  const isModerator = userRole === "admin" || userRole === "moderator";
 
   const pendingReports = reports.filter(r => r.status === "pending");
   const resolvedReports = reports.filter(r => r.status === "resolved");
@@ -201,7 +234,7 @@ const Moderation = () => {
         <TableRow>
           <TableHead>Tipo</TableHead>
           <TableHead>Motivo</TableHead>
-          <TableHead>Reportado por</TableHead>
+          {isModerator && <TableHead>Reportado por</TableHead>}
           <TableHead>Data</TableHead>
           <TableHead>Status</TableHead>
           <TableHead>Ações</TableHead>
@@ -219,7 +252,7 @@ const Moderation = () => {
             <TableRow key={report.id}>
               <TableCell>{getReportTypeLabel(report.report_type)}</TableCell>
               <TableCell className="max-w-md truncate">{report.reason}</TableCell>
-              <TableCell>{report.reporter.username}</TableCell>
+              {isModerator && <TableCell>{report.reporter.username}</TableCell>}
               <TableCell>{format(new Date(report.created_at), "dd/MM/yyyy HH:mm")}</TableCell>
               <TableCell>{getStatusBadge(report.status)}</TableCell>
               <TableCell>
@@ -254,40 +287,50 @@ const Moderation = () => {
                           <p className="text-sm font-medium">ID do Item Reportado:</p>
                           <p className="text-sm text-muted-foreground font-mono">{report.reported_item_id}</p>
                         </div>
-                        <div>
-                          <p className="text-sm font-medium mb-2">Notas do Moderador:</p>
-                          <Textarea
-                            value={moderatorNotes}
-                            onChange={(e) => setModeratorNotes(e.target.value)}
-                            placeholder="Adicione notas sobre sua decisão..."
-                            className="min-h-[100px]"
-                          />
-                        </div>
-                        {report.status === "pending" && (
-                          <div className="flex gap-2 pt-4">
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => handleDeleteContent(report.reported_item_id, report.report_type)}
-                            >
-                              Remover Conteúdo
-                            </Button>
-                            <Button
-                              variant="default"
-                              size="sm"
-                              onClick={() => handleResolve("resolved")}
-                            >
-                              <CheckCircle className="w-4 h-4 mr-2" />
-                              Resolver
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleResolve("dismissed")}
-                            >
-                              <XCircle className="w-4 h-4 mr-2" />
-                              Descartar
-                            </Button>
+                        {isModerator && (
+                          <>
+                            <div>
+                              <p className="text-sm font-medium mb-2">Notas do Moderador:</p>
+                              <Textarea
+                                value={moderatorNotes}
+                                onChange={(e) => setModeratorNotes(e.target.value)}
+                                placeholder="Adicione notas sobre sua decisão..."
+                                className="min-h-[100px]"
+                              />
+                            </div>
+                            {report.status === "pending" && (
+                              <div className="flex gap-2 pt-4">
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => handleDeleteContent(report.reported_item_id, report.report_type)}
+                                >
+                                  Remover Conteúdo
+                                </Button>
+                                <Button
+                                  variant="default"
+                                  size="sm"
+                                  onClick={() => handleResolve("resolved")}
+                                >
+                                  <CheckCircle className="w-4 h-4 mr-2" />
+                                  Resolver
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleResolve("dismissed")}
+                                >
+                                  <XCircle className="w-4 h-4 mr-2" />
+                                  Descartar
+                                </Button>
+                              </div>
+                            )}
+                          </>
+                        )}
+                        {report.moderator_notes && (
+                          <div>
+                            <p className="text-sm font-medium">Resposta do Moderador:</p>
+                            <p className="text-sm text-muted-foreground">{report.moderator_notes}</p>
                           </div>
                         )}
                       </div>
@@ -306,37 +349,115 @@ const Moderation = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 p-4">
       <div className="container mx-auto max-w-7xl">
         <Card className="p-6 shadow-elevated">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 bg-gradient-orkut rounded-full flex items-center justify-center">
-              <Shield className="w-8 h-8 text-white" />
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-gradient-orkut rounded-full flex items-center justify-center">
+                <Shield className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold">Delegacia</h1>
+                <p className="text-muted-foreground">
+                  {isModerator ? "Centro de Moderação da Portella" : "Acompanhe suas denúncias"}
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold">Delegacia</h1>
-              <p className="text-muted-foreground">Centro de Moderação da Portella</p>
-            </div>
+            <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="gap-2">
+                  <Plus className="w-4 h-4" />
+                  Nova Denúncia
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Criar Nova Denúncia</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="report-type">Tipo</Label>
+                    <Select
+                      value={newReport.reportType}
+                      onValueChange={(value: any) =>
+                        setNewReport({ ...newReport, reportType: value })
+                      }
+                    >
+                      <SelectTrigger id="report-type">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="post">Post</SelectItem>
+                        <SelectItem value="comment">Comentário</SelectItem>
+                        <SelectItem value="video">Vídeo</SelectItem>
+                        <SelectItem value="user">Usuário</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="item-id">ID do Item</Label>
+                    <Input
+                      id="item-id"
+                      placeholder="Cole o ID do item que deseja denunciar"
+                      value={newReport.itemId}
+                      onChange={(e) =>
+                        setNewReport({ ...newReport, itemId: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="reason">Motivo da Denúncia</Label>
+                    <Textarea
+                      id="reason"
+                      placeholder="Descreva o motivo da denúncia..."
+                      value={newReport.reason}
+                      onChange={(e) =>
+                        setNewReport({ ...newReport, reason: e.target.value })
+                      }
+                      className="min-h-[100px]"
+                    />
+                  </div>
+                  <Button
+                    className="w-full"
+                    onClick={() => createReportMutation.mutate(newReport)}
+                    disabled={!newReport.itemId || !newReport.reason}
+                  >
+                    Enviar Denúncia
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <Card className="p-4 bg-yellow-500/10">
-              <p className="text-sm text-muted-foreground mb-1">Pendentes</p>
-              <p className="text-3xl font-bold text-yellow-700 dark:text-yellow-300">{pendingReports.length}</p>
-            </Card>
-            <Card className="p-4 bg-green-500/10">
-              <p className="text-sm text-muted-foreground mb-1">Resolvidos</p>
-              <p className="text-3xl font-bold text-green-700 dark:text-green-300">{resolvedReports.length}</p>
-            </Card>
-            <Card className="p-4 bg-gray-500/10">
-              <p className="text-sm text-muted-foreground mb-1">Descartados</p>
-              <p className="text-3xl font-bold">{dismissedReports.length}</p>
-            </Card>
-          </div>
+          {isModerator && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <Card className="p-4 bg-yellow-500/10">
+                <p className="text-sm text-muted-foreground mb-1">Pendentes</p>
+                <p className="text-3xl font-bold text-yellow-700 dark:text-yellow-300">{pendingReports.length}</p>
+              </Card>
+              <Card className="p-4 bg-green-500/10">
+                <p className="text-sm text-muted-foreground mb-1">Resolvidos</p>
+                <p className="text-3xl font-bold text-green-700 dark:text-green-300">{resolvedReports.length}</p>
+              </Card>
+              <Card className="p-4 bg-gray-500/10">
+                <p className="text-sm text-muted-foreground mb-1">Descartados</p>
+                <p className="text-3xl font-bold">{dismissedReports.length}</p>
+              </Card>
+            </div>
+          )}
 
           <Tabs defaultValue="pending" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="pending">Pendentes ({pendingReports.length})</TabsTrigger>
-              <TabsTrigger value="resolved">Resolvidos ({resolvedReports.length})</TabsTrigger>
-              <TabsTrigger value="dismissed">Descartados ({dismissedReports.length})</TabsTrigger>
-            </TabsList>
+            {isModerator ? (
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="pending">Pendentes ({pendingReports.length})</TabsTrigger>
+                <TabsTrigger value="resolved">Resolvidos ({resolvedReports.length})</TabsTrigger>
+                <TabsTrigger value="dismissed">Descartados ({dismissedReports.length})</TabsTrigger>
+              </TabsList>
+            ) : (
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="pending">Minhas Denúncias Pendentes ({pendingReports.length})</TabsTrigger>
+                <TabsTrigger value="resolved">Resolvidas ({resolvedReports.length})</TabsTrigger>
+                <TabsTrigger value="dismissed">Descartadas ({dismissedReports.length})</TabsTrigger>
+              </TabsList>
+            )}
             <TabsContent value="pending" className="mt-6">
               <ReportTable reportsList={pendingReports} />
             </TabsContent>
