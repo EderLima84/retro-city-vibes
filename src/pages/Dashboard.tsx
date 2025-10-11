@@ -86,7 +86,7 @@ const Dashboard = () => {
               icon={Shield}
               label="Delegacia"
               active={activeSection === 'moderation'}
-              onClick={() => setActiveSection('moderation')}
+              onClick={() => navigate('/moderation')}
             />
             <CityIcon
               icon={Building2}

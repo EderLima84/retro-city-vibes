@@ -1,0 +1,356 @@
+import { useAuth } from "@/hooks/useAuth";
+import { Navigate } from "react-router-dom";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Shield, AlertTriangle, CheckCircle, XCircle, Eye } from "lucide-react";
+import { useState } from "react";
+import { format } from "date-fns";
+
+type Report = {
+  id: string;
+  reporter_id: string;
+  reported_item_id: string;
+  report_type: "post" | "comment" | "user" | "video";
+  reason: string;
+  status: "pending" | "resolved" | "dismissed";
+  moderator_notes: string | null;
+  resolved_by: string | null;
+  created_at: string;
+  resolved_at: string | null;
+  reporter: {
+    username: string;
+  };
+};
+
+const Moderation = () => {
+  const { user, loading } = useAuth();
+  const queryClient = useQueryClient();
+  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const [moderatorNotes, setModeratorNotes] = useState("");
+
+  // Check if user is moderator or admin
+  const { data: userRole } = useQuery({
+    queryKey: ["userRole", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .single();
+      return data?.role;
+    },
+    enabled: !!user,
+  });
+
+  // Fetch pending reports
+  const { data: reports = [], isLoading: reportsLoading } = useQuery({
+    queryKey: ["reports"],
+    queryFn: async () => {
+      const { data: reportsData, error } = await supabase
+        .from("reports")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      // Fetch reporter profiles separately
+      const reporterIds = [...new Set(reportsData?.map(r => r.reporter_id) || [])];
+      const { data: profilesData } = await supabase
+        .from("profiles")
+        .select("id, username")
+        .in("id", reporterIds);
+
+      const profilesMap = new Map(profilesData?.map(p => [p.id, p]) || []);
+
+      return reportsData?.map(report => ({
+        ...report,
+        reporter: {
+          username: profilesMap.get(report.reporter_id)?.username || "Usuário Desconhecido",
+        },
+      })) as Report[];
+    },
+    enabled: !!user && (userRole === "admin" || userRole === "moderator"),
+  });
+
+  const updateReportMutation = useMutation({
+    mutationFn: async ({ reportId, status, notes }: { reportId: string; status: "resolved" | "dismissed"; notes: string }) => {
+      const { error } = await supabase
+        .from("reports")
+        .update({
+          status,
+          moderator_notes: notes,
+          resolved_by: user?.id,
+          resolved_at: new Date().toISOString(),
+        })
+        .eq("id", reportId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reports"] });
+      toast.success("Report atualizado com sucesso");
+      setSelectedReport(null);
+      setModeratorNotes("");
+    },
+    onError: () => {
+      toast.error("Erro ao atualizar report");
+    },
+  });
+
+  const deleteContentMutation = useMutation({
+    mutationFn: async ({ itemId, type }: { itemId: string; type: string }) => {
+      let error;
+      
+      if (type === "post") {
+        const result = await supabase.from("posts").delete().eq("id", itemId);
+        error = result.error;
+      } else if (type === "comment") {
+        const result = await supabase.from("comments").delete().eq("id", itemId);
+        error = result.error;
+      } else if (type === "video") {
+        const result = await supabase.from("videos").delete().eq("id", itemId);
+        error = result.error;
+      }
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Conteúdo removido com sucesso");
+    },
+    onError: () => {
+      toast.error("Erro ao remover conteúdo");
+    },
+  });
+
+  if (loading || reportsLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-muted-foreground">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  if (userRole !== "admin" && userRole !== "moderator") {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="p-8 text-center">
+          <AlertTriangle className="w-16 h-16 text-destructive mx-auto mb-4" />
+          <h2 className="text-2xl font-bold mb-2">Acesso Negado</h2>
+          <p className="text-muted-foreground">
+            Você não tem permissão para acessar a Delegacia.
+          </p>
+        </Card>
+      </div>
+    );
+  }
+
+  const pendingReports = reports.filter(r => r.status === "pending");
+  const resolvedReports = reports.filter(r => r.status === "resolved");
+  const dismissedReports = reports.filter(r => r.status === "dismissed");
+
+  const getReportTypeLabel = (type: string) => {
+    const labels = {
+      post: "Post",
+      comment: "Comentário",
+      user: "Usuário",
+      video: "Vídeo",
+    };
+    return labels[type as keyof typeof labels] || type;
+  };
+
+  const getStatusBadge = (status: string) => {
+    if (status === "pending") return <Badge variant="outline" className="bg-yellow-500/10 text-yellow-700 dark:text-yellow-300">Pendente</Badge>;
+    if (status === "resolved") return <Badge variant="outline" className="bg-green-500/10 text-green-700 dark:text-green-300">Resolvido</Badge>;
+    return <Badge variant="outline" className="bg-gray-500/10">Descartado</Badge>;
+  };
+
+  const handleResolve = (status: "resolved" | "dismissed") => {
+    if (!selectedReport) return;
+    updateReportMutation.mutate({
+      reportId: selectedReport.id,
+      status,
+      notes: moderatorNotes,
+    });
+  };
+
+  const handleDeleteContent = (itemId: string, type: string) => {
+    if (confirm("Tem certeza que deseja remover este conteúdo?")) {
+      deleteContentMutation.mutate({ itemId, type });
+    }
+  };
+
+  const ReportTable = ({ reportsList }: { reportsList: Report[] }) => (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Tipo</TableHead>
+          <TableHead>Motivo</TableHead>
+          <TableHead>Reportado por</TableHead>
+          <TableHead>Data</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Ações</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {reportsList.length === 0 ? (
+          <TableRow>
+            <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+              Nenhum report encontrado
+            </TableCell>
+          </TableRow>
+        ) : (
+          reportsList.map((report) => (
+            <TableRow key={report.id}>
+              <TableCell>{getReportTypeLabel(report.report_type)}</TableCell>
+              <TableCell className="max-w-md truncate">{report.reason}</TableCell>
+              <TableCell>{report.reporter.username}</TableCell>
+              <TableCell>{format(new Date(report.created_at), "dd/MM/yyyy HH:mm")}</TableCell>
+              <TableCell>{getStatusBadge(report.status)}</TableCell>
+              <TableCell>
+                <div className="flex gap-2">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedReport(report);
+                          setModeratorNotes(report.moderator_notes || "");
+                        }}
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>Detalhes do Report</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <p className="text-sm font-medium">Tipo:</p>
+                          <p className="text-sm text-muted-foreground">{getReportTypeLabel(report.report_type)}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">Motivo:</p>
+                          <p className="text-sm text-muted-foreground">{report.reason}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">ID do Item Reportado:</p>
+                          <p className="text-sm text-muted-foreground font-mono">{report.reported_item_id}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium mb-2">Notas do Moderador:</p>
+                          <Textarea
+                            value={moderatorNotes}
+                            onChange={(e) => setModeratorNotes(e.target.value)}
+                            placeholder="Adicione notas sobre sua decisão..."
+                            className="min-h-[100px]"
+                          />
+                        </div>
+                        {report.status === "pending" && (
+                          <div className="flex gap-2 pt-4">
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleDeleteContent(report.reported_item_id, report.report_type)}
+                            >
+                              Remover Conteúdo
+                            </Button>
+                            <Button
+                              variant="default"
+                              size="sm"
+                              onClick={() => handleResolve("resolved")}
+                            >
+                              <CheckCircle className="w-4 h-4 mr-2" />
+                              Resolver
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleResolve("dismissed")}
+                            >
+                              <XCircle className="w-4 h-4 mr-2" />
+                              Descartar
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))
+        )}
+      </TableBody>
+    </Table>
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 p-4">
+      <div className="container mx-auto max-w-7xl">
+        <Card className="p-6 shadow-elevated">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-16 h-16 bg-gradient-orkut rounded-full flex items-center justify-center">
+              <Shield className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold">Delegacia</h1>
+              <p className="text-muted-foreground">Centro de Moderação da Portella</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <Card className="p-4 bg-yellow-500/10">
+              <p className="text-sm text-muted-foreground mb-1">Pendentes</p>
+              <p className="text-3xl font-bold text-yellow-700 dark:text-yellow-300">{pendingReports.length}</p>
+            </Card>
+            <Card className="p-4 bg-green-500/10">
+              <p className="text-sm text-muted-foreground mb-1">Resolvidos</p>
+              <p className="text-3xl font-bold text-green-700 dark:text-green-300">{resolvedReports.length}</p>
+            </Card>
+            <Card className="p-4 bg-gray-500/10">
+              <p className="text-sm text-muted-foreground mb-1">Descartados</p>
+              <p className="text-3xl font-bold">{dismissedReports.length}</p>
+            </Card>
+          </div>
+
+          <Tabs defaultValue="pending" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="pending">Pendentes ({pendingReports.length})</TabsTrigger>
+              <TabsTrigger value="resolved">Resolvidos ({resolvedReports.length})</TabsTrigger>
+              <TabsTrigger value="dismissed">Descartados ({dismissedReports.length})</TabsTrigger>
+            </TabsList>
+            <TabsContent value="pending" className="mt-6">
+              <ReportTable reportsList={pendingReports} />
+            </TabsContent>
+            <TabsContent value="resolved" className="mt-6">
+              <ReportTable reportsList={resolvedReports} />
+            </TabsContent>
+            <TabsContent value="dismissed" className="mt-6">
+              <ReportTable reportsList={dismissedReports} />
+            </TabsContent>
+          </Tabs>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default Moderation;

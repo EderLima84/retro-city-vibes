@@ -290,6 +290,45 @@ export type Database = {
         }
         Relationships: []
       }
+      reports: {
+        Row: {
+          created_at: string
+          id: string
+          moderator_notes: string | null
+          reason: string
+          report_type: Database["public"]["Enums"]["report_type"]
+          reported_item_id: string
+          reporter_id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          status: Database["public"]["Enums"]["report_status"]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          moderator_notes?: string | null
+          reason: string
+          report_type: Database["public"]["Enums"]["report_type"]
+          reported_item_id: string
+          reporter_id: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: Database["public"]["Enums"]["report_status"]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          moderator_notes?: string | null
+          reason?: string
+          report_type?: Database["public"]["Enums"]["report_type"]
+          reported_item_id?: string
+          reporter_id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: Database["public"]["Enums"]["report_status"]
+        }
+        Relationships: []
+      }
       scraps: {
         Row: {
           content: string
@@ -570,8 +609,18 @@ export type Database = {
           user_id: string
         }[]
       }
+      has_role: {
+        Args: { _role: string; _user_id: string }
+        Returns: boolean
+      }
+      is_moderator_or_admin: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
+      report_status: "pending" | "resolved" | "dismissed"
+      report_type: "post" | "comment" | "user" | "video"
       user_role: "user" | "moderator" | "admin" | "prefeito"
     }
     CompositeTypes: {
@@ -700,6 +749,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      report_status: ["pending", "resolved", "dismissed"],
+      report_type: ["post", "comment", "user", "video"],
       user_role: ["user", "moderator", "admin", "prefeito"],
     },
   },
