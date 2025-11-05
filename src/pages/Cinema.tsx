@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Tables } from "@/integrations/supabase/types";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { CityNavigation } from "@/components/CityNavigation";
 
 type Video = Tables<"videos"> & {
   profiles: Tables<"profiles">;
@@ -232,46 +233,26 @@ export default function Cinema() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black">
-      {/* Header Cinema Style */}
-      <header className="bg-black/80 backdrop-blur-md border-b border-primary/20 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-3">
+      <CityNavigation />
+
+      {/* Banner de Boas-vindas */}
+      <div className="container mx-auto px-4 pb-6">
+        <div className="bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 border border-primary/30 rounded-2xl py-6 px-8 text-center mb-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate('/dashboard')}
-                className="text-white hover:text-primary"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-              <div className="flex items-center gap-2">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 flex items-center gap-2">
                 <Film className="w-8 h-8 text-primary" />
-                <div>
-                  <h1 className="text-white font-bold text-lg">Cinema Portella</h1>
-                  <p className="text-white/60 text-xs">Onde cada história ganha luz</p>
-                </div>
-              </div>
+                Cinema Portella
+              </h2>
+              <p className="text-white/80 max-w-2xl">
+                🎬 Onde cada história ganha luz no telão da cidade
+              </p>
             </div>
             <Button onClick={() => setShowUploadForm(!showUploadForm)} className="bg-primary hover:bg-primary/90">
               <Upload className="w-4 h-4 mr-2" />
-              🎬 Gravar seu curta!
+              Gravar seu curta!
             </Button>
           </div>
-        </div>
-      </header>
-
-      {/* Banner de Boas-vindas */}
-      <div className="bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 border-y border-primary/30 py-6">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 flex items-center justify-center gap-2">
-            <Sparkles className="w-6 h-6 text-primary" />
-            Bem-vindo ao Cinema Portella
-            <Sparkles className="w-6 h-6 text-primary" />
-          </h2>
-          <p className="text-white/80 max-w-2xl mx-auto">
-            Aqui no Cinema Portella, cada vídeo é um pedaço da alma da cidade — histórias, risos e verdades projetadas no coração do sertão digital.
-          </p>
         </div>
       </div>
 

@@ -10,9 +10,10 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Building2, Vote, Megaphone, Trophy, Users, CheckCircle } from "lucide-react";
+import { Building2, Vote, Megaphone, Trophy, Users, CheckCircle, Scroll, Calendar } from "lucide-react";
 import { useState } from "react";
 import { format } from "date-fns";
+import { CityNavigation } from "@/components/CityNavigation";
 
 type Announcement = {
   id: string;
@@ -305,53 +306,103 @@ const CityHall = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 p-4">
-      <div className="container mx-auto max-w-7xl">
-        <Card className="p-6 shadow-elevated">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 bg-gradient-orkut rounded-full flex items-center justify-center">
-              <Building2 className="w-8 h-8 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold">Prefeitura</h1>
-              <p className="text-muted-foreground">Administração e Democracia Digital</p>
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5">
+      <CityNavigation />
+
+      <div className="container mx-auto px-4 pb-8 max-w-7xl">
+        <Card className="p-8 shadow-elevated bg-card/95 backdrop-blur-sm">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-4">
+              <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
+                <Building2 className="w-10 h-10 text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  🏛️ Prefeitura da Portella
+                </h1>
+                <p className="text-muted-foreground text-lg mt-1">
+                  Onde o povo fala — e a voz do povo tem protocolo
+                </p>
+              </div>
             </div>
           </div>
 
+          {/* Info Card */}
+          <Card className="p-6 mb-8 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border-blue-200 dark:border-blue-800">
+            <div className="flex items-start gap-4">
+              <Scroll className="w-8 h-8 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-1" />
+              <div>
+                <h3 className="font-bold text-lg mb-2 text-blue-900 dark:text-blue-100">
+                  🗳️ Democracia Digital
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Na Portella, cada voz conta. Aqui você pode acompanhar comunicados oficiais, 
+                  participar de eleições para cargos representativos e votar em decisões importantes 
+                  da comunidade. Transparência e participação são os pilares da nossa cidade digital.
+                </p>
+              </div>
+            </div>
+          </Card>
+
           <Tabs defaultValue="announcements" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="announcements" className="gap-2">
-                <Megaphone className="w-4 h-4" />
-                Avisos
+            <TabsList className="grid w-full grid-cols-3 h-auto">
+              <TabsTrigger value="announcements" className="gap-2 py-3">
+                <Megaphone className="w-5 h-5" />
+                <div className="text-left">
+                  <div className="font-semibold">Avisos</div>
+                  <div className="text-xs text-muted-foreground">Comunicados oficiais</div>
+                </div>
               </TabsTrigger>
-              <TabsTrigger value="elections" className="gap-2">
-                <Trophy className="w-4 h-4" />
-                Eleições ({activeElections.length})
+              <TabsTrigger value="elections" className="gap-2 py-3">
+                <Trophy className="w-5 h-5" />
+                <div className="text-left">
+                  <div className="font-semibold">Eleições ({activeElections.length})</div>
+                  <div className="text-xs text-muted-foreground">Eleja representantes</div>
+                </div>
               </TabsTrigger>
-              <TabsTrigger value="polls" className="gap-2">
-                <Vote className="w-4 h-4" />
-                Votações ({activePolls.length})
+              <TabsTrigger value="polls" className="gap-2 py-3">
+                <Vote className="w-5 h-5" />
+                <div className="text-left">
+                  <div className="font-semibold">Votações ({activePolls.length})</div>
+                  <div className="text-xs text-muted-foreground">Decisões rápidas</div>
+                </div>
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="announcements" className="mt-6 space-y-4">
+            <TabsContent value="announcements" className="mt-8 space-y-6">
               {announcements.length === 0 ? (
-                <Card className="p-8 text-center">
-                  <Megaphone className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">Nenhum aviso oficial no momento</p>
+                <Card className="p-12 text-center bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
+                  <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Megaphone className="w-10 h-10 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">📢 Mural Tranquilo</h3>
+                  <p className="text-muted-foreground">
+                    Nenhum comunicado oficial no momento. Quando houver novidades importantes, 
+                    elas aparecerão aqui no mural da Prefeitura.
+                  </p>
                 </Card>
               ) : (
                 announcements.map((announcement) => (
-                  <Card key={announcement.id} className="p-6">
+                  <Card key={announcement.id} className="p-6 hover:shadow-lg transition-shadow border-l-4 border-l-blue-500">
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                        <Megaphone className="w-6 h-6 text-primary" />
+                      <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+                        <Megaphone className="w-7 h-7 text-white" />
                       </div>
-                      <div className="flex-1">
-                        <h3 className="text-xl font-bold mb-2">{announcement.title}</h3>
-                        <p className="text-muted-foreground mb-2">{announcement.content}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {format(new Date(announcement.created_at), "dd/MM/yyyy 'às' HH:mm")}
+                       <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Badge className="bg-blue-500/10 text-blue-700 dark:text-blue-300">
+                            Comunicado Oficial
+                          </Badge>
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {format(new Date(announcement.created_at), "dd/MM/yyyy 'às' HH:mm")}
+                          </span>
+                        </div>
+                        <h3 className="font-bold text-xl mb-3 text-blue-900 dark:text-blue-100">
+                          {announcement.title}
+                        </h3>
+                        <p className="text-muted-foreground leading-relaxed">
+                          {announcement.content}
                         </p>
                       </div>
                     </div>

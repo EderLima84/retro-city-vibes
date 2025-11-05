@@ -13,9 +13,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Shield, AlertTriangle, CheckCircle, XCircle, Eye, Plus } from "lucide-react";
+import { Shield, AlertTriangle, CheckCircle, XCircle, Eye, Plus, FileWarning } from "lucide-react";
 import { useState } from "react";
 import { format } from "date-fns";
+import { CityNavigation } from "@/components/CityNavigation";
 
 type Report = {
   id: string;
@@ -346,18 +347,22 @@ const Moderation = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 p-4">
-      <div className="container mx-auto max-w-7xl">
-        <Card className="p-6 shadow-elevated">
-          <div className="flex items-center justify-between mb-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5">
+      <CityNavigation />
+      
+      <div className="container mx-auto px-4 pb-8 max-w-7xl">
+        <Card className="p-8 shadow-elevated bg-card/95 backdrop-blur-sm">
+          <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-gradient-orkut rounded-full flex items-center justify-center">
-                <Shield className="w-8 h-8 text-white" />
+              <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg">
+                <Shield className="w-10 h-10 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold">Delegacia</h1>
-                <p className="text-muted-foreground">
-                  {isModerator ? "Centro de Moderação da Portella" : "Acompanhe suas denúncias"}
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
+                  🚔 Delegacia da Portella
+                </h1>
+                <p className="text-muted-foreground text-lg mt-1">
+                  {isModerator ? "Mantendo a paz e a ordem na cidade digital" : "Suas denúncias e acompanhamentos"}
                 </p>
               </div>
             </div>
@@ -427,19 +432,46 @@ const Moderation = () => {
             </Dialog>
           </div>
 
+          {/* Info Card */}
+          <Card className="p-6 mb-8 bg-gradient-to-r from-orange-500/10 to-red-500/10 border-orange-200 dark:border-orange-800">
+            <div className="flex items-start gap-4">
+              <FileWarning className="w-8 h-8 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-1" />
+              <div>
+                <h3 className="font-bold text-lg mb-2 text-orange-900 dark:text-orange-100">
+                  🤝 Conselho da Cidade
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {isModerator 
+                    ? "Como guardião da paz em Portella, você tem a responsabilidade de analisar denúncias, proteger a comunidade e manter o respeito entre todos os cidadãos. Cada decisão deve ser justa e transparente."
+                    : "A Delegacia da Portella está aqui para garantir que nossa cidade digital seja um lugar seguro e respeitoso para todos. Se você presenciar conteúdo inadequado, faça uma denúncia e nossa equipe analisará com atenção."
+                  }
+                </p>
+              </div>
+            </div>
+          </Card>
+
           {isModerator && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <Card className="p-4 bg-yellow-500/10">
-                <p className="text-sm text-muted-foreground mb-1">Pendentes</p>
-                <p className="text-3xl font-bold text-yellow-700 dark:text-yellow-300">{pendingReports.length}</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+              <Card className="p-6 bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 border-yellow-300 dark:border-yellow-700">
+                <div className="flex items-center gap-3 mb-2">
+                  <AlertTriangle className="w-6 h-6 text-yellow-700 dark:text-yellow-300" />
+                  <p className="text-sm font-medium text-muted-foreground">Pendentes</p>
+                </div>
+                <p className="text-4xl font-bold text-yellow-700 dark:text-yellow-300">{pendingReports.length}</p>
               </Card>
-              <Card className="p-4 bg-green-500/10">
-                <p className="text-sm text-muted-foreground mb-1">Resolvidos</p>
-                <p className="text-3xl font-bold text-green-700 dark:text-green-300">{resolvedReports.length}</p>
+              <Card className="p-6 bg-gradient-to-br from-green-500/20 to-green-600/20 border-green-300 dark:border-green-700">
+                <div className="flex items-center gap-3 mb-2">
+                  <CheckCircle className="w-6 h-6 text-green-700 dark:text-green-300" />
+                  <p className="text-sm font-medium text-muted-foreground">Resolvidos</p>
+                </div>
+                <p className="text-4xl font-bold text-green-700 dark:text-green-300">{resolvedReports.length}</p>
               </Card>
-              <Card className="p-4 bg-gray-500/10">
-                <p className="text-sm text-muted-foreground mb-1">Descartados</p>
-                <p className="text-3xl font-bold">{dismissedReports.length}</p>
+              <Card className="p-6 bg-gradient-to-br from-gray-500/20 to-gray-600/20 border-gray-300 dark:border-gray-700">
+                <div className="flex items-center gap-3 mb-2">
+                  <XCircle className="w-6 h-6 text-gray-700 dark:text-gray-400" />
+                  <p className="text-sm font-medium text-muted-foreground">Descartados</p>
+                </div>
+                <p className="text-4xl font-bold text-gray-700 dark:text-gray-400">{dismissedReports.length}</p>
               </Card>
             </div>
           )}
