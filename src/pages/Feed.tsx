@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
 import { CommentDialog } from "@/components/CommentDialog";
+import Stories from "@/components/Stories";
 
 type Post = Tables<"posts"> & {
   profiles: Tables<"profiles">;
@@ -403,6 +404,19 @@ const Feed = () => {
                 <span>Ranking atualizado hoje</span>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Stories Section */}
+        <Card className="bg-card/95 backdrop-blur-sm border-primary/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5" />
+              Luzes da Cidade
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Stories />
           </CardContent>
         </Card>
 
