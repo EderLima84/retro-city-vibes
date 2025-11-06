@@ -30,10 +30,14 @@ import {
 import { Tables } from "@/integrations/supabase/types";
 import { CommentDialog } from "@/components/CommentDialog";
 import Stories from "@/components/Stories";
+import { PortellaReactions, ReactionType } from "@/components/PortellaReactions";
+import { CitizenBadge, BadgeType } from "@/components/CitizenBadge";
 
 type Post = Tables<"posts"> & {
   profiles: Tables<"profiles">;
   user_liked?: boolean;
+  user_reaction?: ReactionType | null;
+  badge?: BadgeType;
 };
 
 type Announcement = Tables<"announcements">;
@@ -49,13 +53,11 @@ type PresenceState = {
   username: string;
 };
 
-const reactions = [
-  { icon: "❤️", label: "Coração", color: "text-red-500" },
-  { icon: "🤠", label: "Sertanejo", color: "text-amber-500" },
-  { icon: "😂", label: "Risada", color: "text-yellow-500" },
-  { icon: "🙌", label: "Mãos", color: "text-blue-500" },
-  { icon: "🔥", label: "Fogo", color: "text-orange-500" },
-];
+// Assign random badges for demo purposes
+const getRandomBadge = (): BadgeType => {
+  const badges: BadgeType[] = ['poet', 'chronicler', 'humorist', 'star'];
+  return badges[Math.floor(Math.random() * badges.length)];
+};
 
 const getTimeAgo = (date: string) => {
   const now = new Date();
@@ -460,46 +462,56 @@ const Feed = () => {
 
           <main className="lg:col-span-2">
             {/* Coreto Digital */}
-            <Card className="p-6 mb-8 shadow-elevated border-2 border-primary/20 bg-card/95 backdrop-blur-sm">
-              <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="w-6 h-6 text-primary" />
-            <h2 className="text-2xl font-bold bg-gradient-orkut bg-clip-text text-transparent">
-              Coreto Digital
-            </h2>
+            <Card className="p-6 mb-8 shadow-elevated border-2 border-primary/30 bg-gradient-to-br from-card/95 to-secondary/5 backdrop-blur-sm">
+              <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 bg-gradient-orkut rounded-full flex items-center justify-center shadow-glow">
+              <TrendingUp className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                Coreto Digital
+              </h2>
+              <p className="text-xs text-muted-foreground">O pulso da cidade em tempo real</p>
+            </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-primary/5 rounded-lg p-4 hover:bg-primary/10 transition-colors">
+            <div className="bg-gradient-to-br from-pink-500/10 to-pink-600/5 rounded-lg p-4 hover:from-pink-500/20 hover:to-pink-600/10 transition-all border border-pink-500/20 hover:border-pink-500/40">
               <div className="flex items-center gap-2 mb-2">
                 <Cake className="w-5 h-5 text-pink-500" />
                 <p className="font-semibold text-sm">Aniversariantes</p>
               </div>
-              <p className="text-xs text-muted-foreground">0 pessoas fazendo aniversário hoje</p>
+              <p className="text-xs text-muted-foreground">0 pessoas fazendo aniversário hoje 🎂</p>
             </div>
-            <div className="bg-accent/5 rounded-lg p-4 hover:bg-accent/10 transition-colors">
+            <div className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 rounded-lg p-4 hover:from-amber-500/20 hover:to-amber-600/10 transition-all border border-amber-500/20 hover:border-amber-500/40">
               <div className="flex items-center gap-2 mb-2">
                 <Trophy className="w-5 h-5 text-amber-500" />
                 <p className="font-semibold text-sm">Conquistas</p>
               </div>
-              <p className="text-xs text-muted-foreground">Nenhuma conquista recente</p>
+              <p className="text-xs text-muted-foreground">Nenhuma conquista recente 🏆</p>
             </div>
-            <div className="bg-secondary/5 rounded-lg p-4 hover:bg-secondary/10 transition-colors">
+            <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-lg p-4 hover:from-blue-500/20 hover:to-blue-600/10 transition-all border border-blue-500/20 hover:border-blue-500/40">
               <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-5 h-5 text-blue-500" />
+                <Flame className="w-5 h-5 text-orange-500" />
                 <p className="font-semibold text-sm">Em Alta</p>
               </div>
-              <p className="text-xs text-muted-foreground">Seja o primeiro a postar!</p>
+              <p className="text-xs text-muted-foreground">Seja o primeiro a postar! 🔥</p>
             </div>
           </div>
         </Card>
 
         {/* Criar Post */}
-        <Card className="p-6 mb-8 shadow-card bg-card/95 backdrop-blur-sm rounded-xl">
-          <h3 className="font-semibold mb-4 text-lg">O que está acontecendo na praça?</h3>
+        <Card className="p-6 mb-8 shadow-elevated bg-gradient-to-br from-card/95 to-primary/5 backdrop-blur-sm rounded-xl border-2 border-primary/20 hover:border-primary/40 transition-all">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="w-5 h-5 text-primary" />
+            <h3 className="font-semibold text-lg bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              O que está acontecendo na praça?
+            </h3>
+          </div>
           <Textarea
-            placeholder="Compartilhe algo com a comunidade..."
+            placeholder="Compartilhe algo com a comunidade... 🌾"
             value={newPostContent}
             onChange={(e) => setNewPostContent(e.target.value)}
-            className="mb-4 min-h-[100px]"
+            className="mb-4 min-h-[100px] border-primary/30 focus:border-primary/60"
           />
           
           {imagePreview && (
@@ -546,14 +558,14 @@ const Feed = () => {
             <Button
               onClick={createPost}
               disabled={(!newPostContent.trim() && !newPostImage) || submitting || uploadingImage}
-              className="bg-gradient-orkut hover:opacity-90"
+              className="bg-gradient-orkut hover:opacity-90 shadow-md hover:shadow-glow transition-all"
             >
               {submitting ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               ) : (
                 <Send className="w-4 h-4 mr-2" />
               )}
-              Publicar
+              Publicar na Praça
             </Button>
           </div>
         </Card>
@@ -573,7 +585,7 @@ const Feed = () => {
             </Card>
           ) : (
             posts.map((post) => (
-              <Card key={post.id} className="p-6 shadow-card hover:shadow-elevated transition-all bg-card/95 backdrop-blur-sm rounded-xl">
+              <Card key={post.id} className="p-6 shadow-card hover:shadow-elevated transition-all bg-card/95 backdrop-blur-sm rounded-xl border-l-4 border-l-primary/30">
                 <div className="flex items-start gap-4">
                   <Link to={`/profile/${post.profiles.username}`}>
                     <div className="w-12 h-12 rounded-full bg-gradient-orkut flex items-center justify-center text-white font-bold flex-shrink-0 hover:scale-110 transition-transform shadow-md">
@@ -581,13 +593,14 @@ const Feed = () => {
                     </div>
                   </Link>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <Link to={`/profile/${post.profiles.username}`} className="hover:underline">
                         <h4 className="font-semibold">{post.profiles.display_name}</h4>
                       </Link>
                       <span className="text-xs text-muted-foreground">
                         @{post.profiles.username}
                       </span>
+                      <CitizenBadge type={post.badge || getRandomBadge()} size="sm" />
                     </div>
                     <div className="flex items-center gap-2 mb-3 text-xs text-muted-foreground">
                       <span>{getTimeAgo(post.created_at!)}</span>
@@ -613,37 +626,36 @@ const Feed = () => {
                     )}
                     
                     {/* Interações */}
-                    <div className="flex items-center gap-4 pt-4 border-t">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => toggleLike(post.id, post.user_liked || false)}
-                        className={`gap-2 hover:scale-110 transition-transform ${
-                          post.user_liked ? 'text-red-500' : ''
-                        }`}
-                      >
-                        <Heart className={`w-4 h-4 ${post.user_liked ? 'fill-current' : ''}`} />
-                        <span className="text-sm">{post.likes_count || 0}</span>
-                      </Button>
+                    <div className="space-y-3 pt-4 border-t">
+                      <PortellaReactions 
+                        postId={post.id}
+                        selectedReaction={post.user_reaction}
+                        onReact={(type) => {
+                          toast.success(`Reagiu com ${type}!`);
+                        }}
+                      />
                       
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="gap-2 hover:scale-110 transition-transform"
-                        onClick={() => setCommentDialogPostId(post.id)}
-                      >
-                        <MessageCircle className="w-4 h-4" />
-                        <span className="text-sm">{post.comments_count || 0}</span>
-                      </Button>
+                      <div className="flex items-center gap-4">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="gap-2 hover:scale-110 transition-transform"
+                          onClick={() => setCommentDialogPostId(post.id)}
+                        >
+                          <MessageCircle className="w-4 h-4" />
+                          <span className="text-sm">{post.comments_count || 0} conversas</span>
+                        </Button>
 
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="gap-2 hover:scale-110 transition-transform"
-                        onClick={() => sharePost(post.id)}
-                      >
-                        <Share2 className="w-4 h-4" />
-                      </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="gap-2 hover:scale-110 transition-transform"
+                          onClick={() => sharePost(post.id)}
+                        >
+                          <Share2 className="w-4 h-4" />
+                          <span className="text-sm">Compartilhar</span>
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -655,36 +667,46 @@ const Feed = () => {
 
           <aside className="hidden lg:block">
             <div className="sticky top-24 space-y-6">
-              <Card className="bg-card/95 backdrop-blur-sm border-primary/20">
+              <Card className="bg-card/95 backdrop-blur-sm border-primary/20 shadow-elevated">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Trophy className="w-5 h-5 text-amber-500" />
                     Ranking da Semana
                   </CardTitle>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    🏆 Os mais ativos da Cidade Portella
+                  </p>
                 </CardHeader>
                 <CardContent>
                   {loadingRanking ? (
                     <p className="text-sm text-muted-foreground">Carregando...</p>
                   ) : ranking.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">Ninguém no ranking ainda.</p>
+                    <div className="text-center py-4">
+                      <Trophy className="w-12 h-12 text-muted-foreground/30 mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground">Ninguém no ranking ainda.</p>
+                      <p className="text-xs text-muted-foreground mt-1">Seja o primeiro a ganhar pontos!</p>
+                    </div>
                   ) : (
                     <ul className="space-y-3">
                       {ranking.map((entry, index) => {
                         const profile = rankingProfiles[entry.user_id];
                         if (!profile) return null;
+                        const podiumColors = ['from-amber-400 to-amber-600', 'from-slate-300 to-slate-500', 'from-amber-600 to-amber-800'];
                         return (
-                          <li key={entry.user_id} className="flex items-center gap-3">
-                            <span className={`font-bold text-lg ${index === 0 ? 'text-amber-400' : index === 1 ? 'text-slate-400' : index === 2 ? 'text-amber-600' : ''}`}>
-                              {index + 1}
+                          <li key={entry.user_id} className={`flex items-center gap-3 p-2 rounded-lg transition-all hover:bg-primary/5 ${index < 3 ? 'bg-gradient-to-r ' + podiumColors[index] + ' bg-opacity-10' : ''}`}>
+                            <span className={`font-bold text-lg flex items-center justify-center w-8 h-8 rounded-full ${index === 0 ? 'bg-gradient-to-br from-amber-400 to-amber-600 text-white shadow-glow' : index === 1 ? 'bg-gradient-to-br from-slate-300 to-slate-500 text-white' : index === 2 ? 'bg-gradient-to-br from-amber-600 to-amber-800 text-white' : 'bg-muted text-muted-foreground'}`}>
+                              {index < 3 ? <Trophy className="w-4 h-4" /> : index + 1}
                             </span>
-                            <div className="w-8 h-8 rounded-full bg-gradient-orkut flex items-center justify-center text-white font-bold text-sm">
+                            <div className="w-10 h-10 rounded-full bg-gradient-orkut flex items-center justify-center text-white font-bold text-sm shadow-md">
                               {profile.display_name.charAt(0).toUpperCase()}
                             </div>
                             <div className="flex-1">
                               <p className="font-semibold text-sm truncate">{profile.display_name}</p>
-                              <p className="text-xs text-muted-foreground">{entry.score} pontos</p>
+                              <div className="flex items-center gap-2">
+                                <p className="text-xs text-muted-foreground">{entry.score} pontos</p>
+                                {index === 0 && <span className="text-xs">⭐ Estrela da Semana</span>}
+                              </div>
                             </div>
-                            {index === 0 && <Trophy className="w-5 h-5 text-amber-400" />}
                           </li>
                         );
                       })}
@@ -692,12 +714,15 @@ const Feed = () => {
                   )}
                 </CardContent>
               </Card>
-              <Card className="bg-card/95 backdrop-blur-sm border-primary/20">
+              <Card className="bg-card/95 backdrop-blur-sm border-primary/20 shadow-elevated">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Megaphone className="w-5 h-5 text-primary" />
-                    Anúncios
+                    Mural da Cidade
                   </CardTitle>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    📢 Avisos e novidades oficiais
+                  </p>
                 </CardHeader>
                 <CardContent>
                   {loadingAnnouncements ? (

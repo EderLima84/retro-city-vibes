@@ -2,17 +2,21 @@ import { useAuth } from "@/hooks/useAuth";
 import { Navigate, useNavigate } from "react-router-dom";
 import { CityIcon } from "@/components/CityIcon";
 import { Button } from "@/components/ui/button";
-import { Home, Users, BookOpen, Film, Shield, Building2, LogOut } from "lucide-react";
+import { Home, Users, BookOpen, Film, Shield, Building2, LogOut, Volume2, VolumeX } from "lucide-react";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import Feed from "./Feed";
 import Profile from "./Profile";
 import portellaLogo from "@/assets/portella-logo.png";
+import { useTimeOfDay } from "@/hooks/useTimeOfDay";
+import { cn } from "@/lib/utils";
 
 const Dashboard = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<string>('feed');
+  const [soundEnabled, setSoundEnabled] = useState(false);
+  const { gradient, greeting, emoji } = useTimeOfDay();
 
   if (loading) {
     return (
@@ -30,14 +34,34 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5">
+    <div 
+      className="min-h-screen transition-all duration-1000"
+      style={{
+        background: `linear-gradient(135deg, ${gradient}, var(--background))`
+      }}
+    >
       {/* Header */}
-      <header className="bg-card border-b shadow-card sticky top-0 z-50">
+      <header className="bg-card/80 backdrop-blur-md border-b shadow-card sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <img src={portellaLogo} alt="Portella Logo" className="h-12 w-auto" />
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-muted-foreground">
+            <div className="flex items-center gap-3">
+              <img src={portellaLogo} alt="Portella Logo" className="h-12 w-auto" />
+              <div className="hidden md:flex items-center gap-2 text-lg font-medium text-foreground">
+                <span>{emoji}</span>
+                <span>{greeting}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSoundEnabled(!soundEnabled)}
+                className="gap-2 hidden md:flex"
+              >
+                {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+                <span className="text-xs">Sons</span>
+              </Button>
+              <span className="text-sm text-muted-foreground hidden sm:inline">
                 {user.email}
               </span>
               <Button
@@ -47,7 +71,7 @@ const Dashboard = () => {
                 className="gap-2"
               >
                 <LogOut className="w-4 h-4" />
-                Sair
+                <span className="hidden sm:inline">Sair</span>
               </Button>
             </div>
           </div>
@@ -56,8 +80,10 @@ const Dashboard = () => {
 
       {/* City Map Navigation */}
       <div className="container mx-auto px-4 py-8">
-        <Card className="p-6 mb-8 shadow-elevated">
-          <h2 className="text-2xl font-bold mb-6 text-center">Navegue pela Cidade</h2>
+        <Card className="p-6 mb-8 shadow-elevated bg-card/90 backdrop-blur-sm border-2">
+          <h2 className="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+            Navegue pela Cidade Portella
+          </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <CityIcon
               icon={Home}
