@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Navigate, useNavigate } from "react-router-dom";
 import { CityIcon } from "@/components/CityIcon";
 import { Button } from "@/components/ui/button";
-import { Home, Users, BookOpen, Film, Shield, Building2, LogOut, Volume2, VolumeX } from "lucide-react";
+import { Home, Users, BookOpen, Film, Shield, Building2, LogOut, Volume2, VolumeX, Search } from "lucide-react";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import Feed from "./Feed";
@@ -84,7 +84,7 @@ const Dashboard = () => {
           <h2 className="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
             Navegue pela Cidade Portella
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
             <CityIcon
               icon={Home}
               label="Minha Casa"
@@ -96,6 +96,12 @@ const Dashboard = () => {
               label="Praça Central"
               active={activeSection === 'feed'}
               onClick={() => setActiveSection('feed')}
+            />
+            <CityIcon
+              icon={Search}
+              label="Explorar"
+              active={false}
+              onClick={() => navigate('/explore')}
             />
             <CityIcon
               icon={BookOpen}
