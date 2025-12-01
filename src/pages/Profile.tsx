@@ -8,12 +8,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Chrome as Home, MessageSquare, Award, Image as ImageIcon, Music, Trophy, Send, Sparkles, Star, Heart, Gift, CirclePlus as PlusCircle, Camera, Upload, Edit2, Settings } from "lucide-react";
+import { Chrome as Home, MessageSquare, Award, Image as ImageIcon, Music, Trophy, Send, Sparkles, Star, Heart, Gift, CirclePlus as PlusCircle, Camera, Upload, Edit2, Settings, Users } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
 import { EditProfileDialog } from "@/components/EditProfileDialog";
 import { MusicPlayerDialog } from "@/components/MusicPlayerDialog";
 import { GalleryUploadDialog } from "@/components/GalleryUploadDialog";
 import { useAchievements } from "@/hooks/useAchievements";
+import { FriendshipCircle } from "@/components/FriendshipCircle";
+import { WallMessages } from "@/components/WallMessages";
+import { ReceivedGifts } from "@/components/ReceivedGifts";
 
 type ProfileData = Tables<"profiles"> & {
   avatar_url?: string;
@@ -414,15 +417,23 @@ const Profile = () => {
           </Card>
 
           {/* Abas Horizontais para outras seções */}
-          <Tabs defaultValue="trophies" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
+          <Tabs defaultValue="friendships" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+              <TabsTrigger value="friendships" className="gap-2">
+                <Users className="w-4 h-4" />
+                Amizades
+              </TabsTrigger>
+              <TabsTrigger value="wall" className="gap-2">
+                <MessageSquare className="w-4 h-4" />
+                Mural
+              </TabsTrigger>
+              <TabsTrigger value="gifts" className="gap-2">
+                <Gift className="w-4 h-4" />
+                Presentes
+              </TabsTrigger>
               <TabsTrigger value="trophies" className="gap-2">
                 <Trophy className="w-4 h-4" />
                 Troféus
-              </TabsTrigger>
-              <TabsTrigger value="testimonials" className="gap-2">
-                <Award className="w-4 h-4" />
-                Depoimentos
               </TabsTrigger>
               <TabsTrigger value="gallery" className="gap-2">
                 <ImageIcon className="w-4 h-4" />
@@ -435,6 +446,18 @@ const Profile = () => {
             </TabsList>
 
             <Card className="mt-4">
+              <TabsContent value="friendships" className="p-6">
+                {user && <FriendshipCircle userId={user.id} />}
+              </TabsContent>
+
+              <TabsContent value="wall" className="p-6">
+                {user && <WallMessages userId={user.id} isOwner={true} />}
+              </TabsContent>
+
+              <TabsContent value="gifts" className="p-6">
+                {user && <ReceivedGifts userId={user.id} isOwner={true} />}
+              </TabsContent>
+
               <TabsContent value="trophies" className="p-6">
                 <h3 className="font-semibold mb-6 flex items-center gap-2">
                   <Trophy className="w-5 h-5 text-amber-500" />
