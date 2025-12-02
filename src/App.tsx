@@ -13,6 +13,7 @@ import Cinema from "./pages/Cinema";
 import Moderation from "./pages/Moderation";
 import CityHall from "./pages/CityHall";
 import Explore from "./pages/Explore";
+import PublicProfile from "./pages/PublicProfile";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/moderation" element={<Moderation />} />
           <Route path="/city-hall" element={<CityHall />} />
           <Route path="/explore" element={<Explore />} />
+          <Route path="/profile/:userId" element={<PublicProfile />} />
           <Route path="/test-connection" element={<TestConnection />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
