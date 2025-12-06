@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { CityNavigation } from '@/components/CityNavigation';
-import { Shield, Eye, MessageSquare, UserPlus, Save } from 'lucide-react';
+import { Shield, Eye, MessageSquare, UserPlus, Save, ShieldOff } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
+import { BlockedUsersDialog } from '@/components/BlockedUsersDialog';
 
 type PrivacySetting = Database['public']['Enums']['privacy_setting'];
 
@@ -23,6 +24,7 @@ export default function PrivacySettings() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [blockedDialogOpen, setBlockedDialogOpen] = useState(false);
   const [settings, setSettings] = useState<PrivacySettingsData>({
     who_can_see_posts: 'todos',
     who_can_send_requests: 'todos'
@@ -211,6 +213,31 @@ export default function PrivacySettings() {
             </CardContent>
           </Card>
 
+          <Card className="shadow-elevated border-2">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ShieldOff className="w-5 h-5 text-destructive" />
+                Usuários Bloqueados
+              </CardTitle>
+              <CardDescription>
+                Gerencie os usuários que você bloqueou na cidade
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Usuários bloqueados não podem ver seu perfil, enviar mensagens ou interagir com você.
+              </p>
+              <Button 
+                variant="outline"
+                onClick={() => setBlockedDialogOpen(true)}
+                className="gap-2"
+              >
+                <ShieldOff className="w-4 h-4" />
+                Ver usuários bloqueados
+              </Button>
+            </CardContent>
+          </Card>
+
           <Button 
             onClick={saveSettings} 
             disabled={saving}
@@ -222,6 +249,11 @@ export default function PrivacySettings() {
           </Button>
         </div>
       </main>
+
+      <BlockedUsersDialog 
+        open={blockedDialogOpen}
+        onOpenChange={setBlockedDialogOpen}
+      />
     </div>
   );
 }
