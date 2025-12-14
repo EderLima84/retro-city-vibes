@@ -41,8 +41,8 @@ const Dashboard = () => {
       }}
     >
       {/* Header */}
-      <header className="bg-card/80 backdrop-blur-md border-b shadow-card sticky top-0 z-50 w-full overflow-x-hidden">
-        <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4 max-w-full">
+      <header className="bg-card/80 backdrop-blur-md border-b shadow-card sticky top-0 z-50 w-full">
+        <div className="container mx-auto py-2 sm:py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <img src={portellaLogo} alt="Portella Logo" className="h-12 w-auto" />
@@ -89,8 +89,8 @@ const Dashboard = () => {
       </header>
 
       {/* City Map Navigation */}
-      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-full overflow-x-hidden">
-        <Card className="p-3 sm:p-6 mb-4 sm:mb-8 shadow-elevated bg-card/90 backdrop-blur-sm border-2">
+      <div className="container mx-auto py-4 sm:py-8">
+        <Card className="p-3 sm:p-6 mb-4 sm:mb-8 shadow-elevated bg-card/90 backdrop-blur-sm border-2 w-full">
           <h2 className="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
             Navegue pela Cidade Portella
           </h2>

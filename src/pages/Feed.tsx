@@ -392,8 +392,8 @@ const Feed = () => {
   const greeting = getGreeting();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 py-8">
-      <div className="container mx-auto px-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 py-4 sm:py-8">
+      <div className="container mx-auto">
         {/* Boletim da Cidade */}
         <Card className="mb-6 bg-gradient-to-r from-primary/10 via-accent/10 to-secondary/10 border-primary/30">
           <CardContent className="pt-6">
@@ -420,19 +420,19 @@ const Feed = () => {
         </Card>
 
         {/* Stories Section */}
-        <Card className="bg-card/95 backdrop-blur-sm border-primary/20">
-          <CardHeader>
+        <Card className="bg-card/95 backdrop-blur-sm border-primary/20 mb-6 overflow-hidden">
+          <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2">
               <Sparkles className="w-5 h-5" />
               Luzes da Cidade
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-0 sm:px-6">
             <Stories />
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-8">
           <aside className="hidden lg:block">
             <div className="sticky top-24 space-y-6">
               <Card className="bg-card/95 backdrop-blur-sm border-primary/20">
