@@ -135,7 +135,7 @@ export default function Stories() {
 
   return (
     <>
-      <div className="flex gap-4 overflow-x-auto pb-4 px-4">
+      <div className="flex gap-4 overflow-x-auto pb-4 px-4 sm:px-0 scrollbar-hide">
         {/* My story button */}
         <div className="flex flex-col items-center gap-2 flex-shrink-0">
           <div
