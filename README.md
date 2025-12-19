@@ -1,8 +1,8 @@
-# Welcome to your Lovable project
+# Orkadia - Rede Social
 
-## Project info
+## Sobre o Projeto
 
-**URL**: https://lovable.dev/projects/98a8930a-f9a4-4de8-8900-f07cd41ef53a
+**Orkadia** é uma rede social inspirada no Orkut, onde as conexões voltam a ser humanas. Construa sua casa virtual, participe de clubes e conecte-se com amigos de verdade!
 
 ## How can I edit this code?
 
