@@ -3,9 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Home, Users, BookOpen, Film, Shield, Building2, LogOut, Search, Settings, MessageSquare, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import portellaLogo from "@/assets/portella-logo.png";
+import OrkadiaLogo from "@/assets/Orkadia-logo.png";
 import { CityIcon } from "./CityIcon";
 import { NotificationBell } from "./NotificationBell";
+import { ThemeSelector } from "./ThemeSelector";
 
 export const CityNavigation = () => {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ export const CityNavigation = () => {
   const getActiveSection = () => {
     const path = location.pathname;
     if (path === "/dashboard") return "feed";
-    if (path === "/profile") return "profile";
+    if (path.startsWith("/profile")) return "profile";
     if (path === "/explore") return "explore";
     if (path === "/messages") return "messages";
     if (path === "/clubs") return "clubs";
@@ -34,13 +35,14 @@ export const CityNavigation = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <img 
-              src={portellaLogo} 
-              alt="Portella Logo" 
+              src={OrkadiaLogo} 
+              alt="Orkadia Logo" 
               className="h-12 w-auto cursor-pointer" 
               onClick={() => navigate("/dashboard")}
             />
             <div className="flex items-center gap-4">
               <NotificationBell />
+              <ThemeSelector />
               <Button
                 variant="ghost"
                 size="icon"
@@ -72,10 +74,10 @@ export const CityNavigation = () => {
           <h2 className="text-2xl font-bold mb-6 text-center">Navegue pela Cidade</h2>
           <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-9 gap-4">
             <CityIcon
-              icon={User}
-              label="Meu Perfil"
+              icon={Home}
+              label="Minha Casa"
               active={activeSection === 'profile'}
-              onClick={() => navigate('/profile')}
+              onClick={() => navigate(`/profile/${user?.id}`)}
             />
             <CityIcon
               icon={Users}

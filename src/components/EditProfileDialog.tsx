@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import { useAchievements } from "@/hooks/useAchievements";
 
-type ProfileData = Tables<"profiles">;
+type ProfileData = Tables<"profiles"> & { city?: string | null; country?: string | null; };
 
 interface EditProfileDialogProps {
   open: boolean;
@@ -34,6 +34,8 @@ export const EditProfileDialog = ({ open, onOpenChange, profile, onProfileUpdate
   const [username, setUsername] = useState(profile?.username || "");
   const [bio, setBio] = useState(profile?.bio || "");
   const [houseTheme, setHouseTheme] = useState(profile?.house_theme || "default");
+  const [city, setCity] = useState(profile?.city || "");
+  const [country, setCountry] = useState(profile?.country || "");
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -53,6 +55,8 @@ export const EditProfileDialog = ({ open, onOpenChange, profile, onProfileUpdate
           username: username.trim(),
           bio: bio.trim(),
           house_theme: houseTheme,
+          city: city.trim(),
+          country: country.trim(),
         })
         .eq("id", profile.id);
 
@@ -128,6 +132,29 @@ export const EditProfileDialog = ({ open, onOpenChange, profile, onProfileUpdate
             <p className="text-xs text-muted-foreground text-right">
               {bio.length}/500 caracteres
             </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="city">Cidade</Label>
+              <Input
+                id="city"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="Sua cidade"
+                maxLength={100}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="country">País</Label>
+              <Input
+                id="country"
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                placeholder="Seu país"
+                maxLength={100}
+              />
+            </div>
           </div>
 
           <div className="space-y-2">

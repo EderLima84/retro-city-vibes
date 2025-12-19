@@ -38,12 +38,24 @@ export default function Stories() {
   const [selectedGroup, setSelectedGroup] = useState<StoryGroup | null>(null);
   const [showUpload, setShowUpload] = useState(false);
   const [myStories, setMyStories] = useState<Story[]>([]);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
     if (user) {
       loadStories();
+      loadUserProfile();
     }
   }, [user]);
+
+  const loadUserProfile = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('profiles')
+      .select('avatar_url')
+      .eq('id', user.id)
+      .single();
+    setUserProfile(data);
+  };
 
   const loadStories = async () => {
     if (!user) return;
@@ -151,7 +163,7 @@ export default function Stories() {
           >
             <div className={`p-1 rounded-full ${myStories.length > 0 ? 'bg-gradient-to-tr from-yellow-400 via-orange-500 to-pink-500' : 'bg-muted'}`}>
               <Avatar className="h-16 w-16 border-2 border-background">
-                <AvatarImage src={user?.user_metadata?.avatar_url} />
+                <AvatarImage src={userProfile?.avatar_url} />
                 <AvatarFallback>Você</AvatarFallback>
               </Avatar>
             </div>
