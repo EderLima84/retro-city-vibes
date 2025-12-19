@@ -9,8 +9,7 @@ const __dirname = dirname(__filename);
 // Critical files that must exist in the build
 const CRITICAL_FILES = [
   'favicon.ico',
-  'portella-logo.jpg',
-  'orkadia-logo.jpg'
+  'Orkadia-logo.png'
 ];
 
 // Colors for console output

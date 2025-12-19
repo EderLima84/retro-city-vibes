@@ -193,12 +193,12 @@ describe('Example Tests for Specific Cases', () => {
   });
 
   /**
-   * Test: Verify portella-logo.jpg exists in dist
+   * Test: Verify Orkadia-logo.png exists in dist
    * Requirements: 2.4
    */
-  it('should verify that portella-logo.jpg exists in dist', () => {
+  it('should verify that Orkadia-logo.png exists in dist', () => {
     const distPath = join(__dirname, '..', 'dist');
-    const logoPath = join(distPath, 'portella-logo.jpg');
+    const logoPath = join(distPath, 'Orkadia-logo.png');
     
     // Skip if dist doesn't exist
     if (!existsSync(distPath)) {
@@ -873,8 +873,7 @@ describe('Static File Serving Property Tests', () => {
   it('should verify critical static assets exist in dist', () => {
     const criticalAssets = [
       'favicon.ico',
-      'portella-logo.jpg',
-      'orkadia-logo.jpg'
+      'Orkadia-logo.png'
     ];
     
     fc.assert(
