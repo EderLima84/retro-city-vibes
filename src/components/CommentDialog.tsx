@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send } from "lucide-react";
 import { toast } from "sonner";
 import { Tables } from "@/integrations/supabase/types";
+import { useSimpleGamification } from "@/hooks/useSimpleGamification";
 
 type Comment = Tables<"comments"> & {
   profiles: Tables<"profiles">;
@@ -23,6 +24,7 @@ interface CommentDialogProps {
 }
 
 export const CommentDialog = ({ postId, isOpen, onClose }: CommentDialogProps) => {
+  const { trackActivity } = useSimpleGamification();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(false);
@@ -110,7 +112,11 @@ export const CommentDialog = ({ postId, isOpen, onClose }: CommentDialogProps) =
       if (error) throw error;
 
       setNewComment("");
-      toast.success("Comentário adicionado!");
+      
+      // 🎮 GAMIFICAÇÃO: Rastrear comentário feito
+      trackActivity.commentMade();
+      
+      toast.success("Comentário adicionado! +10 XP");
       loadComments();
     } catch (error) {
       console.error("Erro ao criar comentário:", error);

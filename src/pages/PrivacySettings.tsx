@@ -105,7 +105,7 @@ export default function PrivacySettings() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+    <div className="min-h-screen">
       <CityNavigation />
       
       <main className="max-w-2xl mx-auto px-4 py-8">
@@ -118,7 +118,7 @@ export default function PrivacySettings() {
               Configurações de Privacidade
             </h1>
             <p className="text-muted-foreground">
-              Controle quem pode interagir com você na cidade Portella
+        Controle quem pode interagir com você na cidade Orkadia
             </p>
           </div>
 

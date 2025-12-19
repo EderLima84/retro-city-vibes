@@ -347,7 +347,7 @@ const Moderation = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5">
+    <div className="min-h-screen">
       <CityNavigation />
       
       <div className="container mx-auto px-4 pb-8 max-w-7xl">
@@ -359,7 +359,7 @@ const Moderation = () => {
               </div>
               <div>
                 <h1 className="text-4xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
-                  🚔 Delegacia da Portella
+        🚔 Delegacia de Orkadia
                 </h1>
                 <p className="text-muted-foreground text-lg mt-1">
                   {isModerator ? "Mantendo a paz e a ordem na cidade digital" : "Suas denúncias e acompanhamentos"}
@@ -442,8 +442,8 @@ const Moderation = () => {
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   {isModerator 
-                    ? "Como guardião da paz em Portella, você tem a responsabilidade de analisar denúncias, proteger a comunidade e manter o respeito entre todos os cidadãos. Cada decisão deve ser justa e transparente."
-                    : "A Delegacia da Portella está aqui para garantir que nossa cidade digital seja um lugar seguro e respeitoso para todos. Se você presenciar conteúdo inadequado, faça uma denúncia e nossa equipe analisará com atenção."
+        ? "Como guardião da paz em Orkadia, você tem a responsabilidade de analisar denúncias, proteger a comunidade e manter o respeito entre todos os cidadãos. Cada decisão deve ser justa e transparente."
+        : "A Delegacia de Orkadia está aqui para garantir que nossa cidade digital seja um lugar seguro e respeitoso para todos. Se você presenciar conteúdo inadequado, faça uma denúncia e nossa equipe analisará com atenção."
                   }
                 </p>
               </div>

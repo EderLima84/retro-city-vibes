@@ -2,11 +2,11 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, FileText } from "lucide-react";
-import portellaLogo from "@/assets/portella-logo.png";
+import OrkadiaLogo from "@/assets/Orkadia-logo.png";
 
 const Terms = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5">
+    <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center gap-4 mb-8">
           <Button variant="ghost" size="icon" asChild>
@@ -14,7 +14,7 @@ const Terms = () => {
               <ArrowLeft className="w-5 h-5" />
             </Link>
           </Button>
-          <img src={portellaLogo} alt="Portella" className="h-10" />
+          <img src={OrkadiaLogo} alt="Orkadia" className="h-10" />
         </div>
 
         <Card className="p-8">

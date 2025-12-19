@@ -222,7 +222,7 @@ export default function Cinema() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-black via-gray-900 to-black">
+      <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <Film className="w-16 h-16 text-primary mx-auto mb-4 animate-pulse" />
           <p className="text-white/80">Carregando o Cinema...</p>
@@ -232,17 +232,17 @@ export default function Cinema() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black">
+    <div className="min-h-screen">
       <CityNavigation />
 
       {/* Banner de Boas-vindas */}
       <div className="container mx-auto px-4 pb-6">
-        <div className="bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 border border-primary/30 rounded-2xl py-6 px-8 text-center mb-6">
+        <div className="bg-gradient-to-r from-primary/30 via-accent/30 to-primary/30 backdrop-blur-md border border-white/30 rounded-2xl py-6 px-8 text-center mb-6 shadow-lg">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 flex items-center gap-2">
                 <Film className="w-8 h-8 text-primary" />
-                Cinema Portella
+        Cinema Orkadia
               </h2>
               <p className="text-white/80 max-w-2xl">
                 🎬 Onde cada história ganha luz no telão da cidade
@@ -259,14 +259,14 @@ export default function Cinema() {
       {/* Upload Form */}
       {showUploadForm && (
         <div className="container mx-auto px-4 py-6">
-          <Card className="bg-black/50 border-primary/20">
+          <Card className="bg-black/70 backdrop-blur-md border-white/20 shadow-lg">
             <CardContent className="p-6 space-y-4">
               <Input
                 placeholder="Título do vídeo"
                 value={newVideo.title}
                 onChange={(e) => setNewVideo({ ...newVideo, title: e.target.value })}
                 maxLength={100}
-                className="bg-black/30 border-primary/20 text-white"
+                className="bg-black/50 border-white/30 text-white placeholder:text-white/60"
               />
               <Textarea
                 placeholder="Descrição (opcional)"
@@ -274,7 +274,7 @@ export default function Cinema() {
                 onChange={(e) => setNewVideo({ ...newVideo, description: e.target.value })}
                 maxLength={500}
                 rows={3}
-                className="bg-black/30 border-primary/20 text-white"
+                className="bg-black/50 border-white/30 text-white placeholder:text-white/60"
               />
 
               <div>
@@ -347,20 +347,32 @@ export default function Cinema() {
       {/* Tabs de Filtros */}
       <div className="container mx-auto px-4 py-4">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4 bg-black/50 border border-primary/20">
-            <TabsTrigger value="all" className="data-[state=active]:bg-primary">
+          <TabsList className="grid w-full grid-cols-4 bg-black/80 backdrop-blur-md border border-white/20 shadow-lg">
+            <TabsTrigger 
+              value="all" 
+              className="data-[state=active]:bg-primary data-[state=active]:text-white text-white/80 hover:text-white hover:bg-white/10 transition-all"
+            >
               <Film className="w-4 h-4 mr-2" />
               Todos
             </TabsTrigger>
-            <TabsTrigger value="trending" className="data-[state=active]:bg-primary">
+            <TabsTrigger 
+              value="trending" 
+              className="data-[state=active]:bg-primary data-[state=active]:text-white text-white/80 hover:text-white hover:bg-white/10 transition-all"
+            >
               <TrendingUp className="w-4 h-4 mr-2" />
               Em Alta
             </TabsTrigger>
-            <TabsTrigger value="week" className="data-[state=active]:bg-primary">
+            <TabsTrigger 
+              value="week" 
+              className="data-[state=active]:bg-primary data-[state=active]:text-white text-white/80 hover:text-white hover:bg-white/10 transition-all"
+            >
               <Award className="w-4 h-4 mr-2" />
               Mais Assistidos
             </TabsTrigger>
-            <TabsTrigger value="recent" className="data-[state=active]:bg-primary">
+            <TabsTrigger 
+              value="recent" 
+              className="data-[state=active]:bg-primary data-[state=active]:text-white text-white/80 hover:text-white hover:bg-white/10 transition-all"
+            >
               <Clock className="w-4 h-4 mr-2" />
               Estreias Recentes
             </TabsTrigger>
@@ -371,7 +383,7 @@ export default function Cinema() {
       {/* Feed de Vídeos Estilo Reels */}
       <div className="container mx-auto px-4 pb-6">
         {filteredVideos.length === 0 ? (
-          <Card className="p-12 text-center bg-black/50 border-primary/20">
+          <Card className="p-12 text-center bg-black/70 backdrop-blur-md border-white/20 shadow-lg">
             <div className="flex flex-col items-center gap-4">
               <Film className="w-16 h-16 text-primary" />
               <div>
@@ -385,7 +397,7 @@ export default function Cinema() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredVideos.map((video, index) => (
-              <Card key={video.id} className="group overflow-hidden bg-black/50 border-primary/20 hover:border-primary/50 transition-all">
+              <Card key={video.id} className="group overflow-hidden bg-black/70 backdrop-blur-md border-white/20 hover:border-primary/50 transition-all shadow-lg">
                 <CardContent className="p-0 relative aspect-[9/16]">
                   {/* Video */}
                   <video
@@ -446,8 +458,8 @@ export default function Cinema() {
                       <Button
                         size="icon"
                         variant="ghost"
-                        className={`rounded-full w-12 h-12 ${
-                          video.user_liked ? "bg-primary text-white" : "bg-black/50 text-white hover:bg-primary/50"
+                        className={`rounded-full w-12 h-12 backdrop-blur-md ${
+                          video.user_liked ? "bg-primary text-white" : "bg-black/70 text-white hover:bg-primary/50"
                         }`}
                         onClick={() => toggleLike(video.id, video.user_liked || false)}
                       >
@@ -456,21 +468,21 @@ export default function Cinema() {
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="rounded-full w-12 h-12 bg-black/50 text-white hover:bg-primary/50"
+                        className="rounded-full w-12 h-12 bg-black/70 backdrop-blur-md text-white hover:bg-primary/50"
                       >
                         <MessageCircle className="w-6 h-6" />
                       </Button>
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="rounded-full w-12 h-12 bg-black/50 text-white hover:bg-primary/50"
+                        className="rounded-full w-12 h-12 bg-black/70 backdrop-blur-md text-white hover:bg-primary/50"
                       >
                         <Share2 className="w-6 h-6" />
                       </Button>
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="rounded-full w-12 h-12 bg-black/50 text-white hover:bg-primary/50"
+                        className="rounded-full w-12 h-12 bg-black/70 backdrop-blur-md text-white hover:bg-primary/50"
                       >
                         <Bookmark className="w-6 h-6" />
                       </Button>

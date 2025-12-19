@@ -44,7 +44,7 @@ const TestConnection = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-primary/5 to-accent/5 p-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-2xl p-6 shadow-lg">
         <h1 className="text-2xl font-bold mb-6 text-center">Teste de Conexão e Tabelas Supabase</h1>
         

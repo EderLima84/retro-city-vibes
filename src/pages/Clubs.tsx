@@ -10,6 +10,7 @@ import { Tables } from "@/integrations/supabase/types";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CityNavigation } from "@/components/CityNavigation";
+import { useSimpleGamification } from "@/hooks/useSimpleGamification";
 
 type Community = Tables<"communities"> & {
   is_member?: boolean;
@@ -29,6 +30,7 @@ export default function Clubs() {
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string>("Todos");
   const navigate = useNavigate();
+  const { trackActivity } = useSimpleGamification();
 
   useEffect(() => {
     loadCommunities();
@@ -97,7 +99,11 @@ export default function Clubs() {
           });
 
         if (error) throw error;
-        toast.success("Você entrou no clube!");
+        
+        // 🎮 GAMIFICAÇÃO: Rastrear entrada no clube
+        trackActivity.clubJoined();
+        
+        toast.success("Você entrou no clube! +50 XP");
       }
 
       loadCommunities();
@@ -130,7 +136,7 @@ export default function Clubs() {
         <div className="bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 border rounded-2xl p-8 mb-8 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-3 flex items-center justify-center gap-3">
             <Sparkles className="w-8 h-8 text-primary" />
-            Clubes da Portella
+        Clubes de Orkadia
             <Sparkles className="w-8 h-8 text-primary" />
           </h1>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
@@ -164,7 +170,12 @@ export default function Clubs() {
                         <Icon className="w-7 h-7 text-white" />
                       </div>
                       <div className="flex-1">
-                        <CardTitle className="text-xl mb-1">{community.name}</CardTitle>
+                        <CardTitle 
+                          className="text-xl mb-1 cursor-pointer hover:text-primary transition-colors"
+                          onClick={() => navigate(`/clubs/${community.id}`)}
+                        >
+                          {community.name}
+                        </CardTitle>
                         <Badge variant="secondary" className="text-xs">
                           {community.category}
                         </Badge>
@@ -199,14 +210,17 @@ export default function Clubs() {
                   {/* Botões de Ação */}
                   <div className="flex gap-2">
                     <Button
-                      variant={community.is_member ? "outline" : "default"}
+                      variant="outline"
                       className="flex-1"
+                      onClick={() => navigate(`/clubs/${community.id}`)}
+                    >
+                      Ver Clube
+                    </Button>
+                    <Button
+                      variant={community.is_member ? "outline" : "default"}
                       onClick={() => toggleMembership(community.id, community.is_member || false)}
                     >
                       {community.is_member ? "Sair" : "Entrar"}
-                    </Button>
-                    <Button variant="outline" size="icon" className="shrink-0">
-                      <Calendar className="w-4 h-4" />
                     </Button>
                   </div>
                 </CardContent>

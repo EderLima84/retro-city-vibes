@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Home, Users, BookOpen, Film, Shield, Building2, LogOut, Search, Settings, MessageSquare, User } from "lucide-react";
+import { Home, Users, BookOpen, Film, Shield, Building2, LogOut, Search, Settings, MessageSquare, Gift, Trophy } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import OrkadiaLogo from "@/assets/Orkadia-logo.png";
 import { CityIcon } from "./CityIcon";
@@ -20,6 +20,8 @@ export const CityNavigation = () => {
     if (path === "/explore") return "explore";
     if (path === "/messages") return "messages";
     if (path === "/clubs") return "clubs";
+    if (path === "/invites") return "invites";
+    if (path === "/gamification") return "gamification";
     if (path === "/cinema") return "cinema";
     if (path === "/moderation") return "moderation";
     if (path === "/city-hall") return "city-hall";
@@ -72,7 +74,7 @@ export const CityNavigation = () => {
       <div className="container mx-auto px-4 py-8">
         <Card className="p-6 mb-8 shadow-elevated">
           <h2 className="text-2xl font-bold mb-6 text-center">Navegue pela Cidade</h2>
-          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-9 gap-4">
+          <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-10 gap-4">
             <CityIcon
               icon={Home}
               label="Minha Casa"
@@ -102,6 +104,18 @@ export const CityNavigation = () => {
               label="Clubes"
               active={activeSection === 'clubs'}
               onClick={() => navigate('/clubs')}
+            />
+            <CityIcon
+              icon={Gift}
+              label="Convites"
+              active={activeSection === 'invites'}
+              onClick={() => navigate('/invites')}
+            />
+            <CityIcon
+              icon={Trophy}
+              label="Gamificação"
+              active={activeSection === 'gamification'}
+              onClick={() => navigate('/gamification')}
             />
             <CityIcon
               icon={Film}

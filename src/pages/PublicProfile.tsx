@@ -113,7 +113,7 @@ const PublicProfile = () => {
 
   if (authLoading || loadingData) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <p className="text-lg text-muted-foreground">Carregando...</p>
       </div>
     );
@@ -125,7 +125,7 @@ const PublicProfile = () => {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <Card className="p-8 text-center">
           <p className="text-lg text-muted-foreground mb-4">Perfil não encontrado</p>
           <Button onClick={() => navigate("/explore")}>
@@ -138,7 +138,7 @@ const PublicProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
+    <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <Button
           variant="ghost"

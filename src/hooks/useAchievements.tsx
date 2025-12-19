@@ -2,7 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 type AchievementType = 
-  | "welcome" // Bem-vindo ao Portella!
+  | "welcome" // Bem-vindo(a) à Orkadia!
   | "first_scrap" // Primeiro Recado
   | "photographer" // Fotógrafo
   | "decorator" // Decorador
@@ -19,7 +19,7 @@ type AchievementType =
   | "cinephile"; // Cinéfilo
 
 const achievementMapping: Record<AchievementType, string> = {
-  welcome: "Bem-vindo ao Portella!",
+  welcome: "Bem-vindo(a) à Orkadia!",
   first_scrap: "Primeiro Recado",
   photographer: "Fotógrafo",
   decorator: "Decorador",

@@ -99,6 +99,111 @@ All colors MUST be HSL.
     --shadow-card: 0 2px 8px hsl(220 40% 10% / 0.35);
     --shadow-elevated: 0 8px 24px hsl(220 40% 10% / 0.55);
     --shadow-glow: 0 0 32px hsl(195 75% 55% / 0.45);
+
+    /* Dark theme gradients */
+    --gradient-orkut: linear-gradient(135deg, hsl(220 60% 25%), hsl(215 75% 45%));
+    --gradient-city: linear-gradient(180deg, hsl(210 50% 30%), hsl(215 65% 35%));
+    --gradient-shine: linear-gradient(90deg, transparent, hsl(195 75% 50% / 0.3), transparent);
+  }
+
+  .christmas {
+    /* Christmas Theme - Red and Green */
+    --background: 120 25% 92%;
+    --foreground: 355 70% 15%;
+
+    --card: 120 20% 95%;
+    --card-foreground: 355 70% 15%;
+
+    --popover: 120 20% 95%;
+    --popover-foreground: 355 70% 15%;
+
+    /* Primary: Christmas Red */
+    --primary: 355 75% 55%;
+    --primary-foreground: 120 25% 98%;
+    --primary-glow: 355 85% 65%;
+
+    /* Secondary: Christmas Green */
+    --secondary: 120 60% 35%;
+    --secondary-foreground: 120 25% 98%;
+
+    /* Accent: Gold */
+    --accent: 45 85% 55%;
+    --accent-foreground: 355 70% 15%;
+
+    --muted: 120 20% 80%;
+    --muted-foreground: 355 40% 35%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 120 25% 98%;
+
+    --border: 120 30% 75%;
+    --input: 120 30% 75%;
+    --ring: 355 75% 55%;
+
+    --shadow-card: 0 2px 8px hsl(355 40% 20% / 0.12);
+    --shadow-elevated: 0 8px 24px hsl(355 40% 20% / 0.18);
+    --shadow-glow: 0 0 24px hsl(355 75% 55% / 0.4);
+
+    /* Christmas gradients */
+    --gradient-orkut: linear-gradient(135deg, hsl(355 70% 45%), hsl(120 60% 35%));
+    --gradient-city: linear-gradient(180deg, hsl(355 60% 60%), hsl(120 50% 45%));
+    --gradient-shine: linear-gradient(90deg, transparent, hsl(45 85% 65% / 0.5), transparent);
+    
+    /* Christmas specific colors */
+    --christmas-red: 355 75% 55%;
+    --christmas-green: 120 60% 35%;
+    --christmas-gold: 45 85% 55%;
+    --christmas-snow: 0 0% 98%;
+  }
+
+  .new-year {
+    /* New Year Theme - Gold and Purple */
+    --background: 280 30% 92%;
+    --foreground: 45 70% 15%;
+
+    --card: 280 25% 95%;
+    --card-foreground: 45 70% 15%;
+
+    --popover: 280 25% 95%;
+    --popover-foreground: 45 70% 15%;
+
+    /* Primary: Royal Purple */
+    --primary: 280 75% 55%;
+    --primary-foreground: 280 30% 98%;
+    --primary-glow: 280 85% 65%;
+
+    /* Secondary: Deep Gold */
+    --secondary: 45 80% 50%;
+    --secondary-foreground: 280 30% 98%;
+
+    /* Accent: Bright Gold */
+    --accent: 50 90% 60%;
+    --accent-foreground: 280 70% 15%;
+
+    --muted: 280 20% 80%;
+    --muted-foreground: 45 40% 35%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 280 30% 98%;
+
+    --border: 280 30% 75%;
+    --input: 280 30% 75%;
+    --ring: 280 75% 55%;
+
+    --shadow-card: 0 2px 8px hsl(280 40% 20% / 0.12);
+    --shadow-elevated: 0 8px 24px hsl(280 40% 20% / 0.18);
+    --shadow-glow: 0 0 24px hsl(50 90% 60% / 0.4);
+
+    /* New Year gradients */
+    --gradient-orkut: linear-gradient(135deg, hsl(280 70% 45%), hsl(45 80% 50%));
+    --gradient-city: linear-gradient(180deg, hsl(280 60% 60%), hsl(50 70% 55%));
+    --gradient-shine: linear-gradient(90deg, transparent, hsl(50 90% 70% / 0.6), transparent);
+    
+    /* New Year specific colors */
+    --new-year-purple: 280 75% 55%;
+    --new-year-gold: 45 80% 50%;
+    --new-year-sparkle: 50 90% 60%;
+    --new-year-midnight: 280 50% 15%;
   }
 }
 
@@ -115,12 +220,13 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
     overflow-x: hidden;
     width: 100%;
     min-width: 0;
     margin: 0;
     padding: 0;
+    /* Remove background from body since we're using GlobalBackground */
   }
 
   #root {
@@ -201,4 +307,237 @@ All colors MUST be HSL.
   .flex > * {
     min-width: 0;
   }
+}
+
+/* Custom animations */
+@keyframes particle-float {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-20px) scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Christmas Theme Animations */
+@keyframes snowfall {
+  0% {
+    transform: translateY(-100vh) translateX(0px) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) translateX(100px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes jingle {
+  0%, 100% {
+    transform: rotate(-5deg);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
+}
+
+/* New Year Theme Animations */
+@keyframes fireworks {
+  0% {
+    transform: scale(0) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1) rotate(180deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.5) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1) rotate(180deg);
+  }
+}
+
+@keyframes countdown {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes confetti {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* Apply custom animations */
+.animate-particle-float {
+  animation: particle-float 4s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.8s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.6s ease-out;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Christmas animations */
+.animate-snowfall {
+  animation: snowfall 10s linear infinite;
+}
+
+.animate-twinkle {
+  animation: twinkle 2s ease-in-out infinite;
+}
+
+.animate-jingle {
+  animation: jingle 1s ease-in-out infinite;
+}
+
+/* New Year animations */
+.animate-fireworks {
+  animation: fireworks 3s ease-out infinite;
+}
+
+.animate-sparkle {
+  animation: sparkle 1.5s ease-in-out infinite;
+}
+
+.animate-countdown {
+  animation: countdown 1s ease-in-out infinite;
+}
+
+.animate-confetti {
+  animation: confetti 5s linear infinite;
+}
+
+/* Theme-specific effects */
+.christmas .bg-gradient-orkut {
+  background: var(--gradient-orkut);
+}
+
+.new-year .bg-gradient-orkut {
+  background: var(--gradient-orkut);
+}
+
+/* Christmas snow effect */
+.christmas::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(2px 2px at 20px 30px, white, transparent),
+    radial-gradient(2px 2px at 40px 70px, white, transparent),
+    radial-gradient(1px 1px at 90px 40px, white, transparent),
+    radial-gradient(1px 1px at 130px 80px, white, transparent),
+    radial-gradient(2px 2px at 160px 30px, white, transparent);
+  background-repeat: repeat;
+  background-size: 200px 100px;
+  animation: snowfall 20s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.6;
+}
+
+/* New Year sparkles effect */
+.new-year::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(2px 2px at 25px 25px, hsl(var(--new-year-sparkle)), transparent),
+    radial-gradient(1px 1px at 75px 75px, hsl(var(--new-year-gold)), transparent),
+    radial-gradient(2px 2px at 125px 125px, hsl(var(--new-year-sparkle)), transparent),
+    radial-gradient(1px 1px at 175px 175px, hsl(var(--new-year-gold)), transparent);
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  animation: sparkle 3s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.4;
 }

@@ -32,6 +32,7 @@ import { CommentDialog } from "@/components/CommentDialog";
 import Stories from "@/components/Stories";
 import { PortellaReactions, ReactionType } from "@/components/PortellaReactions";
 import { CitizenBadge, BadgeType } from "@/components/CitizenBadge";
+import { useSimpleGamification } from "@/hooks/useSimpleGamification";
 
 type Post = Tables<"posts"> & {
   profiles: Tables<"profiles">;
@@ -39,6 +40,8 @@ type Post = Tables<"posts"> & {
   user_reaction?: ReactionType | null;
   badge?: BadgeType;
 };
+
+
 
 type Announcement = Tables<"announcements">;
 
@@ -51,6 +54,7 @@ type PresenceState = {
   user_id: string;
   display_name: string;
   username: string;
+  avatar_url?: string; // Adicionado para o avatar
   presence_ref?: string;
 };
 
@@ -80,17 +84,19 @@ const getTimeAgo = (date: string) => {
 
 const getGreeting = () => {
   const hour = new Date().getHours();
-  if (hour < 12) return { text: "Bom dia, Portellanos!", icon: Sunrise, message: "O sol nasceu na Praça Central — compartilhe sua história de hoje." };
-  if (hour < 18) return { text: "Boa tarde, Portellanos!", icon: TrendingUp, message: "A cidade está animada — veja o que está acontecendo!" };
-  return { text: "Boa noite, Portellanos!", icon: Star, message: "As estrelas brilham na Praça — conte como foi seu dia." };
+  if (hour < 12) return { text: "Bom dia, Orkadianos!", icon: Sunrise, message: "O sol nasceu na Praça Central — compartilhe sua história de hoje." };
+  if (hour < 18) return { text: "Boa tarde, Orkadianos!", icon: TrendingUp, message: "A cidade está animada — veja o que está acontecendo!" };
+  return { text: "Boa noite, Orkadianos!", icon: Star, message: "As estrelas brilham na Praça — conte como foi seu dia." };
 };
 
-const Feed = () => {
+const Feed = ({ setActiveSection }: { setActiveSection: (section: string) => void; }) => {
   const { user, loading } = useAuth();
+  const { trackActivity } = useSimpleGamification();
   const [posts, setPosts] = useState<Post[]>([]);
   const [ranking, setRanking] = useState<Ranking[]>([]);
   const [rankingProfiles, setRankingProfiles] = useState<Record<string, Tables<"profiles">>>({});
   const [onlineUsers, setOnlineUsers] = useState<PresenceState[]>([]);
+  const [currentProfile, setCurrentProfile] = useState<Tables<"profiles"> | null>(null);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [newPostContent, setNewPostContent] = useState("");
   const [newPostImage, setNewPostImage] = useState<File | null>(null);
@@ -102,102 +108,7 @@ const Feed = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [commentDialogPostId, setCommentDialogPostId] = useState<string | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (user) {
-      loadPosts();
-      loadRanking();
-      loadAnnouncements();
-
-      const channel = supabase.channel("praça-central", {
-        config: {
-          presence: {
-            key: user.id,
-          },
-        },
-      });
-
-      channel
-        .on("presence", { event: "sync" }, () => {
-          const newState = channel.presenceState<PresenceState>();
-          const allPresences = Object.values(newState).flat();
-          
-          // Remove duplicate users (keep only one presence per user_id)
-          const uniqueUsers = allPresences.reduce((acc, presence) => {
-            if (!acc.find(u => u.user_id === presence.user_id)) {
-              acc.push(presence);
-            }
-            return acc;
-          }, [] as PresenceState[]);
-          
-          setOnlineUsers(uniqueUsers);
-        })
-        .on("presence", { event: "join" }, ({ key, newPresences }) => {
-          console.log("join", key, newPresences);
-        })
-        .on("presence", { event: "leave" }, ({ key, leftPresences }) => {
-          console.log("leave", key, leftPresences);
-        })
-        .subscribe(async (status) => {
-          if (status === "SUBSCRIBED") {
-            const { data: profile } = await supabase
-              .from("profiles")
-              .select("display_name, username")
-              .eq("id", user.id)
-              .single();
-
-            await channel.track({ 
-              user_id: user.id, 
-              display_name: profile?.display_name,
-              username: profile?.username,
-            });
-          }
-        });
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    }
-  }, [user]);
-
-  const loadPosts = async () => {
-    try {
-      const { data: postsData, error } = await supabase
-        .from("posts")
-        .select(`
-          *,
-          profiles (*)
-        `)
-        .order("created_at", { ascending: false })
-        .limit(20);
-
-      if (error) throw error;
-
-      // Check if user liked each post
-      if (user && postsData) {
-        const { data: likesData } = await supabase
-          .from("post_likes")
-          .select("post_id")
-          .eq("user_id", user.id);
-
-        const likedPostIds = new Set(likesData?.map(like => like.post_id) || []);
-        
-        const postsWithLikes = postsData.map(post => ({
-          ...post,
-          user_liked: likedPostIds.has(post.id),
-        }));
-
-        setPosts(postsWithLikes);
-      } else {
-        setPosts(postsData || []);
-      }
-    } catch (error) {
-      console.error("Erro ao carregar posts:", error);
-      toast.error("Erro ao carregar posts");
-    } finally {
-      setLoadingPosts(false);
-    }
-  };
+  const [userPostsCount, setUserPostsCount] = useState<number>(0);
 
   const loadRanking = async () => {
     try {
@@ -246,6 +157,208 @@ const Feed = () => {
     }
   };
 
+  useEffect(() => {
+    if (user) {
+      loadPosts();
+      loadRanking();
+      loadAnnouncements();
+
+      const channel = supabase.channel("praça-central", {
+        config: {
+          presence: {
+            key: user.id,
+          },
+        },
+      });
+
+      channel
+        .on("presence", { event: "sync" }, () => {
+          const newState = channel.presenceState<PresenceState>();
+          const allPresences = Object.values(newState).flat();
+          
+          // Remove duplicate users (keep only one presence per user_id)
+          const uniqueUsers = allPresences.reduce((acc, presence) => {
+            if (!acc.find(u => u.user_id === presence.user_id)) {
+              acc.push(presence);
+            }
+            return acc;
+          }, [] as PresenceState[]);
+          
+          setOnlineUsers(uniqueUsers);
+        })
+        .on("presence", { event: "join" }, ({ key, newPresences }) => {
+          console.log("join", key, newPresences);
+        })
+        .on("presence", { event: "leave" }, ({ key, leftPresences }) => {
+          console.log("leave", key, leftPresences);
+        })
+        .subscribe(async (status) => {
+          if (status === "SUBSCRIBED") {
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("*")
+              .eq("id", user.id)
+              .single();
+
+            await channel.track({ 
+              user_id: user.id, 
+              display_name: profile?.display_name,
+              username: profile?.username,
+              avatar_url: profile?.avatar_url, // Adicionado
+            });
+
+            if (profile) {
+              setCurrentProfile(profile as Tables<"profiles">);
+            }
+          }
+        });
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [user]);
+
+  useEffect(() => {
+    const fetchUserPostsCount = async () => {
+      if (!user) return;
+      try {
+        const { count, error } = await supabase
+          .from("posts")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id);
+        if (!error && count !== null) {
+          setUserPostsCount(count);
+        } else {
+          setUserPostsCount(0);
+        }
+      } catch (e) {
+        console.error("Erro ao contar posts do usuário:", e);
+        setUserPostsCount(0);
+      }
+    };
+    fetchUserPostsCount();
+  }, [user]);
+
+  const loadPosts = async () => {
+    setLoadingPosts(true);
+    try {
+      const { data: postsData, error } = await supabase
+        .from("posts")
+        .select(`
+          *,
+          profiles:user_id (*)
+        `)
+        .order("created_at", { ascending: false })
+        .limit(20);
+
+      if (error) throw error;
+
+      if (postsData) {
+        if (user) {
+          const postIds = postsData.map((p) => p.id);
+          let likedPostIds = new Set<string>();
+          let reactionMap = new Map<string, ReactionType>();
+
+          if (postIds.length > 0) {
+            try {
+              const { data: likesData } = await supabase
+                .from("post_likes")
+                .select("post_id")
+                .eq("user_id", user.id)
+                .in("post_id", postIds);
+              if (likesData) {
+                likedPostIds = new Set(likesData.map(like => like.post_id));
+              }
+            } catch (e) { console.log("Could not fetch likes"); }
+
+            try {
+              const { data: reactionsData } = await supabase
+                .from("post_reactions")
+                .select("post_id, type")
+                .eq("user_id", user.id)
+                .in("post_id", postIds);
+              if (reactionsData) {
+                reactionMap = new Map(
+                  reactionsData.map(r => [r.post_id as string, r.type as ReactionType])
+                );
+              }
+            } catch (e) { console.log("Could not fetch reactions"); }
+          }
+
+          const finalPosts = postsData.map(post => ({
+            ...post,
+            user_liked: likedPostIds.has(post.id),
+            user_reaction: reactionMap.get(post.id) || null,
+          }));
+
+          setPosts(finalPosts as Post[]);
+        } else {
+          setPosts(postsData as Post[]);
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao carregar posts:", error);
+      toast.error("Erro ao carregar posts");
+    } finally {
+      setLoadingPosts(false);
+    }
+  };
+
+  const handleReact = async (postId: string, type: ReactionType) => {
+    try {
+      const { data: auth } = await supabase.auth.getUser();
+      const authUser = auth?.user;
+      if (!authUser) {
+        toast.error("Você precisa estar autenticado para reagir.");
+        return;
+      }
+
+      // Check if post_reactions table exists
+      try {
+        const { data: existingArr } = await supabase
+          .from("post_reactions")
+          .select("id, type")
+          .eq("post_id", postId)
+          .eq("user_id", authUser.id)
+          .limit(1);
+
+        const existing = existingArr?.[0] as { id: string; type: ReactionType } | undefined;
+
+        if (existing && existing.type === type) {
+          const { error: delError } = await supabase
+            .from("post_reactions")
+            .delete()
+            .eq("id", existing.id);
+          if (delError) throw delError;
+          setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, user_reaction: null } : p)));
+          toast.success("Reação removida");
+        } else if (existing) {
+          const { error: updError } = await supabase
+            .from("post_reactions")
+            .update({ type })
+            .eq("id", existing.id);
+          if (updError) throw updError;
+          setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, user_reaction: type } : p)));
+          toast.success("Reação atualizada!");
+        } else {
+          const { error: insError } = await supabase
+            .from("post_reactions")
+            .insert({ post_id: postId, user_id: authUser.id, type });
+          if (insError) throw insError;
+          setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, user_reaction: type } : p)));
+          toast.success(`Reagiu com ${type}!`);
+        }
+      } catch (tableError) {
+        console.error("post_reactions table not available:", tableError);
+        toast.error("Sistema de reações temporariamente indisponível");
+      }
+    } catch (error) {
+      console.error("Erro ao reagir:", error);
+      toast.error("Não foi possível registrar a reação");
+    }
+  };
+
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -282,30 +395,52 @@ const Feed = () => {
         setUploadingImage(true);
         const fileExt = newPostImage.name.split('.').pop();
         const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-        
-        const { error: uploadError, data } = await supabase.storage
-          .from('post-images')
-          .upload(fileName, newPostImage);
 
-        if (uploadError) throw uploadError;
+        try {
+          const { error: uploadError } = await supabase.storage
+            .from('post-images')
+            .upload(fileName, newPostImage);
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('post-images')
-          .getPublicUrl(fileName);
+          if (uploadError) throw uploadError as any;
 
-        imageUrl = publicUrl;
-        setUploadingImage(false);
+          const { data: { publicUrl } } = supabase.storage
+            .from('post-images')
+            .getPublicUrl(fileName);
+
+          imageUrl = publicUrl;
+        } catch (uploadErr: any) {
+          console.error('Erro ao enviar imagem para Storage:', uploadErr);
+          const status = uploadErr?.status ?? uploadErr?.code;
+          if (status === 404) {
+            toast.error("Bucket 'post-images' não existe no projeto Supabase.");
+          } else if (status === 401 || status === 403) {
+            toast.error('Sem permissão para enviar imagem. Verifique políticas do Storage.');
+          } else {
+            toast.error('Erro ao enviar imagem. Tente novamente.');
+          }
+          setUploadingImage(false);
+          setSubmitting(false);
+          return;
+        } finally {
+          setUploadingImage(false);
+        }
       }
 
-      const { error } = await supabase
-        .from("posts")
-        .insert({
-          user_id: user.id,
-          content: newPostContent.trim() || "",
-          image_url: imageUrl,
-        });
+      const insertData = {
+        content: newPostContent.trim() || "",
+        image_url: imageUrl,
+        user_id: user.id,
+        author_id: user.id,
+      };
 
-      if (error) throw error;
+      const { error } = await supabase.from("posts").insert(insertData);
+
+      if (error) {
+        const msg = error.message || 'Erro ao criar post';
+        console.error('Erro ao criar post:', error);
+        toast.error(msg);
+        throw error;
+      }
 
       setNewPostContent("");
       setNewPostImage(null);
@@ -313,11 +448,21 @@ const Feed = () => {
       if (imageInputRef.current) {
         imageInputRef.current.value = "";
       }
-      toast.success("✨ Post criado! +2 pontos de cidadania");
+      
+      // 🎮 GAMIFICAÇÃO: Rastrear criação de post
+      trackActivity.postCreated();
+      
+      toast.success("✨ Post criado! +25 XP");
       loadPosts();
     } catch (error) {
-      console.error("Erro ao criar post:", error);
-      toast.error("Erro ao criar post");
+      // Já tratamos erros específicos acima; aqui garantimos uma fallback amigável
+      if (error) {
+        const msg = (error as any)?.message || (error as any)?.error_description || 'Erro ao criar post';
+        console.error('Erro ao criar post (geral):', error);
+        toast.error(msg);
+      } else {
+        toast.error('Erro ao criar post');
+      }
     } finally {
       setSubmitting(false);
       setUploadingImage(false);
@@ -347,6 +492,9 @@ const Feed = () => {
           });
 
         if (error) throw error;
+        
+        // 🎮 GAMIFICAÇÃO: Rastrear curtida dada
+        trackActivity.likeGiven();
       }
 
       // Update local state
@@ -392,7 +540,7 @@ const Feed = () => {
   const greeting = getGreeting();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-accent/5 py-4 sm:py-8">
+    <div className="min-h-screen py-4 sm:py-8">
       <div className="container mx-auto">
         {/* Boletim da Cidade */}
         <Card className="mb-6 bg-gradient-to-r from-primary/10 via-accent/10 to-secondary/10 border-primary/30">
@@ -451,9 +599,13 @@ const Feed = () => {
                         <li key={`${presence.user_id}-${presence.presence_ref || ''}`}>
                           <Link to={`/profile/${presence.username}`} className="flex items-center gap-3 hover:bg-primary/10 p-2 rounded-lg transition-all hover:scale-105">
                             <div className="relative">
-                              <div className="w-10 h-10 rounded-full bg-gradient-orkut flex items-center justify-center text-white font-bold shadow-md">
-                                {presence.display_name.charAt(0).toUpperCase()}
-                              </div>
+                              {presence.avatar_url ? (
+                                <img src={presence.avatar_url} alt={presence.display_name} className="w-10 h-10 rounded-full object-cover shadow-md" />
+                              ) : (
+                                <div className="w-10 h-10 rounded-full bg-gradient-orkut flex items-center justify-center text-white font-bold shadow-md">
+                                  {presence.display_name.charAt(0).toUpperCase()}
+                                </div>
+                              )}
                               <span className="absolute -bottom-0.5 -right-0.5 block h-3 w-3 rounded-full bg-green-500 ring-2 ring-background animate-pulse" />
                             </div>
                             <div className="flex-1 min-w-0">
@@ -465,6 +617,71 @@ const Feed = () => {
                       ))}
                     </ul>
                   )}
+                </CardContent>
+              </Card>
+              {/* Profile Card - LinkedIn Style */}
+              <Card className="bg-card/95 backdrop-blur-sm border-primary/20 overflow-hidden shadow-elevated">
+                <div className="relative h-20 bg-gradient-to-r from-primary/10 via-accent/10 to-secondary/10">
+                  {/* You can add a cover image here if available in profile */}
+                </div>
+                <div className="flex flex-col items-center -mt-10 pb-4 px-4">
+                  <div onClick={() => setActiveSection('profile')} className="relative cursor-pointer">
+                    {currentProfile?.avatar_url ? (
+                      <img 
+                        src={currentProfile.avatar_url} 
+                        alt={currentProfile.display_name || ''} 
+                        className="w-20 h-20 rounded-full object-cover border-4 border-background shadow-lg"
+                      />
+                    ) : (
+                      <div className="w-20 h-20 rounded-full bg-gradient-orkut flex items-center justify-center text-white font-bold border-4 border-background shadow-lg">
+                        <span className="text-3xl">{currentProfile?.display_name?.charAt(0).toUpperCase()}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div onClick={() => setActiveSection('profile')} className="text-center mt-2 hover:underline cursor-pointer">
+                    <p className="font-semibold text-lg">{currentProfile?.display_name}</p>
+                    <p className="text-sm text-muted-foreground">@{currentProfile?.username}</p>
+                  </div>
+                </div>
+                <div className="border-t border-border/50 px-4 py-3 text-sm">
+                  <div className="flex justify-between items-center text-muted-foreground hover:bg-muted/50 p-2 rounded-md -mx-2">
+                    <span>Visualizações do perfil</span>
+                    <span className="font-bold text-primary">{/* TODO: Add view count */}123</span>
+                  </div>
+                  <div className="flex justify-between items-center text-muted-foreground hover:bg-muted/50 p-2 rounded-md -mx-2">
+                    <span>Posts na Praça</span>
+                    <span className="font-bold text-primary">{userPostsCount}</span>
+                  </div>
+                </div>
+                <div className="border-t border-border/50 px-4 py-3">
+                  <Button variant="outline" className="w-full" onClick={() => setActiveSection('profile')}>
+                    Ver meu perfil
+                  </Button>
+                </div>
+              </Card>
+
+              <Card className="bg-card/95 backdrop-blur-sm border-primary/20 shadow-elevated">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-secondary" />
+                    Acesso Rápido
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link to="/dashboard"><Button variant="ghost" className="justify-start">Praça Central</Button></Link>
+                    <Link to="/explore"><Button variant="ghost" className="justify-start">Explorar</Button></Link>
+                    <Link to="/city-hall"><Button variant="ghost" className="justify-start">Prefeitura</Button></Link>
+                    <Link to="/clubs"><Button variant="ghost" className="justify-start">Clubes</Button></Link>
+                    <Link to="/cinema"><Button variant="ghost" className="justify-start">Cinema</Button></Link>
+                    <Link to="/messages"><Button variant="ghost" className="justify-start">Mensagens</Button></Link>
+                    <Link to="/profile"><Button variant="ghost" className="justify-start">Meu Perfil</Button></Link>
+                    <Link to="/privacy-settings"><Button variant="ghost" className="justify-start">Privacidade</Button></Link>
+                    <Link to="/moderation"><Button variant="ghost" className="justify-start">Moderação</Button></Link>
+                    <Link to="/terms"><Button variant="ghost" className="justify-start">Termos</Button></Link>
+                    <Link to="/privacy"><Button variant="ghost" className="justify-start">Privacidade</Button></Link>
+                    <Link to="/"><Button variant="ghost" className="justify-start">Início</Button></Link>
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -597,10 +814,18 @@ const Feed = () => {
             posts.map((post) => (
               <Card key={post.id} className="p-6 shadow-card hover:shadow-elevated transition-all bg-card/95 backdrop-blur-sm rounded-xl border-l-4 border-l-primary/30">
                 <div className="flex items-start gap-4">
-                  <Link to={`/profile/${post.profiles.username}`}>
-                    <div className="w-12 h-12 rounded-full bg-gradient-orkut flex items-center justify-center text-white font-bold flex-shrink-0 hover:scale-110 transition-transform shadow-md">
-                      {post.profiles.display_name.charAt(0).toUpperCase()}
-                    </div>
+                  <Link to={`/profile/${post.profiles.username}`} className="flex-shrink-0">
+                    {post.profiles.avatar_url ? (
+                      <img 
+                        src={post.profiles.avatar_url} 
+                        alt={post.profiles.display_name || ''} 
+                        className="w-12 h-12 rounded-full object-cover hover:scale-110 transition-transform shadow-md"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-gradient-orkut flex items-center justify-center text-white font-bold hover:scale-110 transition-transform shadow-md">
+                        {post.profiles.display_name?.charAt(0).toUpperCase()}
+                      </div>
+                    )}
                   </Link>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -640,9 +865,7 @@ const Feed = () => {
                       <PortellaReactions 
                         postId={post.id}
                         selectedReaction={post.user_reaction}
-                        onReact={(type) => {
-                          toast.success(`Reagiu com ${type}!`);
-                        }}
+                        onReact={(type) => handleReact(post.id, type)}
                       />
                       
                       <div className="flex items-center gap-4">
@@ -684,7 +907,7 @@ const Feed = () => {
                     Ranking da Semana
                   </CardTitle>
                   <p className="text-xs text-muted-foreground mt-1">
-                    🏆 Os mais ativos da Cidade Portella
+      🏆 Os mais ativos da Cidade Orkadia
                   </p>
                 </CardHeader>
                 <CardContent>

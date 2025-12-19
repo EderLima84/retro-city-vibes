@@ -26,6 +26,7 @@ import { useAchievements } from "@/hooks/useAchievements";
 import { FriendshipCircle } from "@/components/FriendshipCircle";
 import { WallMessages } from "@/components/WallMessages";
 import { ReceivedGifts } from "@/components/ReceivedGifts";
+import { ThemeSelector } from "@/components/ThemeSelector";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,6 +38,9 @@ import {
 type ProfileData = Tables<"profiles"> & {
   avatar_url?: string;
   cover_photo_url?: string;
+  music_url?: string;
+  city?: string;
+  country?: string;
 };
 type Scrap = Tables<"scraps"> & {
   from_profile: Tables<"profiles">;
@@ -47,6 +51,9 @@ type Testimonial = Tables<"testimonials"> & {
 type UserAchievement = Tables<"user_achievements"> & {
   achievement: Tables<"achievements">;
 };
+
+type Photo = Pick<Tables<"posts">, "id" | "image_url">;
+type Friend = Pick<Tables<"profiles">, "id" | "display_name" | "avatar_url" | "username">;
 
 const Profile = () => {
   const { user, loading } = useAuth();
@@ -64,6 +71,9 @@ const Profile = () => {
   const [musicDialogOpen, setMusicDialogOpen] = useState(false);
   const [galleryDialogOpen, setGalleryDialogOpen] = useState(false);
   const [blockedUsersDialogOpen, setBlockedUsersDialogOpen] = useState(false);
+  const [photos, setPhotos] = useState<Photo[]>([]);
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [userPosts, setUserPosts] = useState<Tables<"posts">[]>([]);
   const [activeTab, setActiveTab] = useState("posts");
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -123,6 +133,59 @@ const Profile = () => {
 
       if (achievementsError) throw achievementsError;
       setAchievements(achievementsData || []);
+
+      // Load photos for the gallery preview
+      const { data: photoData, error: photoError } = await supabase
+        .from("posts")
+        .select("id, image_url")
+        .eq("user_id", user.id)
+        .not("image_url", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(6);
+
+      if (photoError) {
+        console.warn("Aviso ao carregar fotos:", photoError);
+      } else {
+        setPhotos(photoData || []);
+      }
+
+      // Load friends
+      const { data: friendsData, error: friendsError } = await supabase
+        .from("friendships")
+        .select("friend_id")
+        .eq("user_id", user.id)
+        .limit(6);
+
+      if (friendsError) {
+        console.warn("Aviso ao carregar amigos:", friendsError);
+      } else {
+        const friendIds = friendsData.map((f) => f.friend_id);
+        if (friendIds.length > 0) {
+          const { data: friendProfiles, error: friendProfilesError } = await supabase
+            .from("profiles")
+            .select("id, display_name, avatar_url, username")
+            .in("id", friendIds);
+
+          if (friendProfilesError) {
+            console.warn("Aviso ao carregar perfis de amigos:", friendProfilesError);
+          } else {
+            setFriends(friendProfiles || []);
+          }
+        }
+      }
+
+      // Load user posts
+      const { data: postsData, error: postsError } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (postsError) {
+        console.warn("Aviso ao carregar posts:", postsError);
+      } else {
+        setUserPosts(postsData || []);
+      }
 
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
@@ -249,6 +312,11 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Theme Selector - Fixed Position */}
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeSelector />
+      </div>
+      
       {/* Cover Photo Section - Facebook Style */}
       <div className="relative">
         <div className="h-[200px] sm:h-[280px] md:h-[350px] bg-gradient-to-r from-primary/20 via-secondary/20 to-accent/20 relative">
@@ -391,6 +459,7 @@ const Profile = () => {
                 { id: "gifts", label: "Presentes", icon: Gift },
                 { id: "trophies", label: "Troféus", icon: Trophy },
                 { id: "music", label: "Música", icon: Music },
+                { id: "scraps", label: "Recados", icon: MessageSquare },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -428,11 +497,11 @@ const Profile = () => {
               <div className="space-y-3">
                 <div className="flex items-center gap-3 text-sm">
                   <Home className="w-5 h-5 text-muted-foreground" />
-                  <span>Mora em <strong>Portella</strong></span>
+                  <span>Mora em <strong>{profile?.city || 'Não informado'}</strong></span>
                 </div>
                 <div className="flex items-center gap-3 text-sm">
                   <MapPin className="w-5 h-5 text-muted-foreground" />
-                  <span>De <strong>Cidade Virtual</strong></span>
+                  <span>De <strong>{profile?.country || 'Não informado'}</strong></span>
                 </div>
                 <div className="flex items-center gap-3 text-sm">
                   <Calendar className="w-5 h-5 text-muted-foreground" />
@@ -461,11 +530,21 @@ const Profile = () => {
                 </Button>
               </div>
               <div className="grid grid-cols-3 gap-1 rounded-lg overflow-hidden">
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className="aspect-square bg-muted flex items-center justify-center">
-                    <ImageIcon className="w-6 h-6 text-muted-foreground/30" />
+                {photos.length > 0 ? (
+                  photos.map((photo) => (
+                    <div key={photo.id} className="aspect-square bg-muted">
+                      <img 
+                        src={photo.image_url!}
+                        alt="Foto do usuário"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-3 text-center text-sm text-muted-foreground p-4">
+                    Nenhuma foto para mostrar ainda.
                   </div>
-                ))}
+                )}
               </div>
             </Card>
 
@@ -479,15 +558,23 @@ const Profile = () => {
               </div>
               <p className="text-sm text-muted-foreground mb-3">{friendsCount} amigos</p>
               <div className="grid grid-cols-3 gap-2">
-                {/* Placeholder for friends */}
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className="text-center">
-                    <div className="aspect-square bg-muted rounded-lg mb-1 flex items-center justify-center">
-                      <Users className="w-6 h-6 text-muted-foreground/30" />
-                    </div>
-                    <p className="text-xs text-muted-foreground truncate">Amigo</p>
+                {friends.length > 0 ? (
+                  friends.map((friend) => (
+                    <Link to={`/profile/${friend.username}`} key={friend.id} className="text-center">
+                      <Avatar className="w-full h-auto aspect-square rounded-lg mb-1">
+                        <AvatarImage src={friend.avatar_url || undefined} alt={friend.display_name || ''} />
+                        <AvatarFallback className="rounded-lg">
+                          {friend.display_name?.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <p className="text-xs text-muted-foreground truncate">{friend.display_name}</p>
+                    </Link>
+                  ))
+                ) : (
+                  <div className="col-span-3 text-center text-sm text-muted-foreground p-4">
+                    Você ainda não adicionou amigos.
                   </div>
-                ))}
+                )}
               </div>
             </Card>
           </div>
@@ -501,100 +588,46 @@ const Profile = () => {
                   <div className="flex gap-3">
                     <Avatar className="w-10 h-10">
                       <AvatarImage src={profile?.avatar_url || undefined} />
-                      <AvatarFallback className="bg-gradient-orkut text-primary-foreground">
-                        {profile?.display_name?.charAt(0).toUpperCase()}
-                      </AvatarFallback>
+                      <AvatarFallback>{profile?.display_name?.charAt(0)}</AvatarFallback>
                     </Avatar>
-                    <div className="flex-1">
-                      <Textarea
-                        placeholder="O que você está pensando?"
-                        value={newScrap}
-                        onChange={(e) => setNewScrap(e.target.value)}
-                        className="resize-none border-0 bg-muted/50 focus-visible:ring-1 mb-3"
-                        rows={2}
-                      />
-                      <div className="flex items-center justify-between">
-                        <div className="flex gap-2">
-                          <Button variant="ghost" size="sm" className="gap-2 text-accent">
-                            <ImageIcon className="w-4 h-4" />
-                            Foto
-                          </Button>
-                          <Button variant="ghost" size="sm" className="gap-2 text-secondary">
-                            <Sparkles className="w-4 h-4" />
-                            Momento
-                          </Button>
-                        </div>
-                        <Button
-                          onClick={addScrap}
-                          disabled={!newScrap.trim()}
-                          size="sm"
-                          className="gap-2"
-                        >
-                          <Send className="w-4 h-4" />
-                          Publicar
-                        </Button>
-                      </div>
+                    <Textarea
+                      placeholder="O que você está pensando?"
+                      className="flex-1 bg-muted border-none focus-visible:ring-1 focus-visible:ring-primary"
+                      rows={2}
+                    />
+                  </div>
+                  <div className="flex justify-between items-center mt-3">
+                    <div className="flex gap-2">
+                      <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground">
+                        <ImageIcon className="w-4 h-4" /> Foto
+                      </Button>
+                      <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground">
+                        <Sparkles className="w-4 h-4" /> Momento
+                      </Button>
                     </div>
+                    <Button className="gap-2">
+                      <Send className="w-4 h-4" /> Publicar
+                    </Button>
                   </div>
                 </Card>
 
-                {/* Posts/Scraps List */}
-                {loadingData ? (
-                  <Card className="p-8 text-center">
-                    <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                    <p className="text-muted-foreground">Carregando publicações...</p>
-                  </Card>
-                ) : scraps.length === 0 ? (
-                  <Card className="p-8 text-center">
-                    <MessageSquare className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-                    <h3 className="font-semibold mb-1">Nenhuma publicação ainda</h3>
-                    <p className="text-muted-foreground text-sm">
-                      Compartilhe algo com seus amigos!
-                    </p>
-                  </Card>
-                ) : (
-                  scraps.map((scrap) => (
-                    <Card key={scrap.id} className="overflow-hidden">
-                      <div className="p-4">
-                        <div className="flex items-start gap-3">
-                          <Avatar className="w-10 h-10">
-                            <AvatarImage src={scrap.from_profile?.avatar_url || undefined} />
-                            <AvatarFallback className="bg-gradient-orkut text-primary-foreground">
-                              {scrap.from_profile.display_name.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold text-sm">
-                                {scrap.from_profile.display_name}
-                              </span>
-                              <span className="text-xs text-muted-foreground">
-                                {new Date(scrap.created_at!).toLocaleDateString("pt-BR", {
-                                  day: "numeric",
-                                  month: "short",
-                                  hour: "2-digit",
-                                  minute: "2-digit"
-                                })}
-                              </span>
-                            </div>
-                            <p className="text-sm mt-2 whitespace-pre-wrap">{scrap.content}</p>
-                          </div>
+                {/* User Posts */}
+                <div className="space-y-4 mt-4">
+                  {userPosts.map((post) => (
+                    <Card key={post.id} className="p-4">
+                      <p className="text-muted-foreground whitespace-pre-wrap">{post.content}</p>
+                      {post.image_url && (
+                        <div className="mt-3 rounded-lg overflow-hidden">
+                          <img src={post.image_url} alt="Post" className="w-full h-auto object-cover" />
                         </div>
-                      </div>
-                      <Separator />
-                      <div className="flex items-center justify-around py-2 px-4">
-                        <Button variant="ghost" size="sm" className="gap-2 flex-1">
-                          <Heart className="w-4 h-4" />
-                          Curtir
-                        </Button>
-                        <Button variant="ghost" size="sm" className="gap-2 flex-1">
-                          <MessageSquare className="w-4 h-4" />
-                          Comentar
-                        </Button>
+                      )}
+                      <div className="flex justify-end gap-4 text-xs text-muted-foreground mt-3">
+                        <span>{post.likes_count || 0} curtidas</span>
+                        <span>{post.comments_count || 0} comentários</span>
                       </div>
                     </Card>
-                  ))
-                )}
+                  ))}
+                </div>
               </>
             )}
 
@@ -699,47 +732,40 @@ const Profile = () => {
               </Card>
             )}
 
+            {activeTab === "scraps" && (
+              <Card className="p-6">
+                <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5 text-primary" />
+                  Mural de Recados
+                </h2>
+                <WallMessages userId={user.id} isOwner={true} />
+              </Card>
+            )}
+
             {activeTab === "music" && (
               <Card className="p-6">
                 <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
                   <Music className="w-5 h-5 text-accent" />
-                  Música da Casa
+                  Música do Perfil
                 </h2>
-                {profile?.house_music ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
-                      <div className="w-16 h-16 bg-gradient-orkut rounded-lg flex items-center justify-center">
-                        <Music className="w-8 h-8 text-primary-foreground" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium">Música Ativa</p>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {profile.house_music}
-                        </p>
-                      </div>
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setMusicDialogOpen(true)}
-                      className="w-full gap-2"
-                    >
-                      <Settings className="w-4 h-4" />
-                      Alterar Música
-                    </Button>
+                {profile?.music_url ? (
+                  <div className="aspect-video">
+                    <iframe
+                      className="w-full h-full rounded-lg"
+                      src={`https://www.youtube.com/embed/${profile.music_url.split('v=')[1]?.split('&')[0] || profile.music_url.split('/').pop()}`}
+                      title="YouTube video player"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
                   </div>
                 ) : (
                   <div className="text-center py-8">
                     <Music className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
-                    <h4 className="font-semibold mb-2">Nenhuma música definida</h4>
-                    <p className="text-muted-foreground text-sm mb-4">
-                      Adicione uma música para tocar quando visitarem sua casa!
-                    </p>
-                    <Button 
-                      onClick={() => setMusicDialogOpen(true)}
-                      className="gap-2"
-                    >
-                      <Music className="w-4 h-4" />
-                      Adicionar Música
+                    <p className="text-muted-foreground mb-4">Nenhuma música foi adicionada ao perfil ainda.</p>
+                    <Button onClick={() => setMusicDialogOpen(true)}>
+                      <Music className="w-4 h-4 mr-2" />
+                      Adicionar música
                     </Button>
                   </div>
                 )}

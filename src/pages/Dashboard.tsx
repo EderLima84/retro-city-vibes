@@ -1,22 +1,33 @@
 import { useAuth } from "@/hooks/useAuth";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { CityIcon } from "@/components/CityIcon";
 import { Button } from "@/components/ui/button";
-import { Home, Users, BookOpen, Film, Shield, Building2, LogOut, Volume2, VolumeX, Search, Settings } from "lucide-react";
-import { useState } from "react";
+import { Home, Users, BookOpen, Film, Shield, Building2, LogOut, Volume2, VolumeX, Search, Settings, Gift, MessageSquare } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import Feed from "./Feed";
 import Profile from "./Profile";
-import portellaLogo from "@/assets/portella-logo.png";
+import OrkadiaLogo from "@/assets/Orkadia-logo.png";
 import { useTimeOfDay } from "@/hooks/useTimeOfDay";
 import { NotificationBell } from "@/components/NotificationBell";
+import { ThemeSelector } from "@/components/ThemeSelector";
+import { SimpleUserLevelBadge } from "@/components/SimpleUserLevelBadge";
 
 const Dashboard = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [activeSection, setActiveSection] = useState<string>('feed');
   const [soundEnabled, setSoundEnabled] = useState(false);
   const { gradient, greeting, emoji } = useTimeOfDay();
+
+  // Verificar se há erros de OAuth e redirecionar
+  useEffect(() => {
+    const error = searchParams.get('error');
+    if (error) {
+      navigate(`/auth/error?${searchParams.toString()}`);
+    }
+  }, [searchParams, navigate]);
 
   if (loading) {
     return (
@@ -34,18 +45,13 @@ const Dashboard = () => {
   }
 
   return (
-    <div 
-      className="min-h-screen transition-all duration-1000"
-      style={{
-        background: `linear-gradient(135deg, ${gradient}, var(--background))`
-      }}
-    >
+    <div className="min-h-screen transition-all duration-1000">
       {/* Header */}
       <header className="bg-card/80 backdrop-blur-md border-b shadow-card sticky top-0 z-50 w-full">
         <div className="container mx-auto py-2 sm:py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img src={portellaLogo} alt="Portella Logo" className="h-12 w-auto" />
+              <img src={OrkadiaLogo} alt="Orkadia Logo" className="h-12 w-auto" />
               <div className="hidden md:flex items-center gap-2 text-lg font-medium text-foreground">
                 <span>{emoji}</span>
                 <span>{greeting}</span>
@@ -62,6 +68,8 @@ const Dashboard = () => {
                 <span className="text-xs">Sons</span>
               </Button>
               <NotificationBell />
+              <SimpleUserLevelBadge size="sm" />
+              <ThemeSelector />
               <Button
                 variant="ghost"
                 size="icon"
@@ -92,9 +100,9 @@ const Dashboard = () => {
       <div className="container mx-auto py-4 sm:py-8">
         <Card className="p-3 sm:p-6 mb-4 sm:mb-8 shadow-elevated bg-card/90 backdrop-blur-sm border-2 w-full">
           <h2 className="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-            Navegue pela Cidade Portella
+            Navegue pela Cidade Orkadia
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-2 sm:gap-4">
+          <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-2 sm:gap-4">
             <CityIcon
               icon={Home}
               label="Minha Casa"
@@ -114,10 +122,22 @@ const Dashboard = () => {
               onClick={() => navigate('/explore')}
             />
             <CityIcon
+              icon={MessageSquare}
+              label="Mensagens"
+              active={false}
+              onClick={() => navigate('/messages')}
+            />
+            <CityIcon
               icon={BookOpen}
               label="Clubes"
               active={activeSection === 'communities'}
               onClick={() => navigate('/clubs')}
+            />
+            <CityIcon
+              icon={Gift}
+              label="Convites"
+              active={false}
+              onClick={() => navigate('/invites')}
             />
             <CityIcon
               icon={Film}
@@ -141,8 +161,8 @@ const Dashboard = () => {
         </Card>
 
         {/* Content Area */}
-        {activeSection === 'feed' && <Feed />}
-        {activeSection === 'profile' && <Profile />}
+        {activeSection === 'feed' && <Feed setActiveSection={setActiveSection} />}
+          {activeSection === 'profile' && <Profile />}
         
         {activeSection !== 'feed' && activeSection !== 'profile' && (
           <Card className="p-8 shadow-elevated">

@@ -318,7 +318,7 @@ const CityHall = () => {
               </div>
               <div>
                 <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                  🏛️ Prefeitura da Portella
+          🏛️ Prefeitura de Orkadia
                 </h1>
                 <p className="text-muted-foreground text-lg mt-1">
                   Onde o povo fala — e a voz do povo tem protocolo
@@ -336,7 +336,7 @@ const CityHall = () => {
                   🗳️ Democracia Digital
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Na Portella, cada voz conta. Aqui você pode acompanhar comunicados oficiais, 
+                  Na Orkadia, cada voz conta. Aqui você pode acompanhar comunicados oficiais, 
                   participar de eleições para cargos representativos e votar em decisões importantes 
                   da comunidade. Transparência e participação são os pilares da nossa cidade digital.
                 </p>
@@ -608,7 +608,7 @@ const CityHall = () => {
           <div className="space-y-4">
             <div>
               <p className="text-sm text-muted-foreground mb-4">
-                Apresente suas propostas para a comunidade Portella
+              Apresente suas propostas para a comunidade Orkadia
               </p>
               <Textarea
                 placeholder="Descreva suas propostas e por que você seria um bom representante..."

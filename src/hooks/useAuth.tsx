@@ -29,21 +29,55 @@ export const useAuth = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, username: string, displayName: string) => {
+  const signUp = async (email: string, password: string, username: string, displayName: string, inviteCode?: string) => {
     const redirectUrl = `${window.location.origin}/`;
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: redirectUrl,
         data: {
           username,
-          display_name: displayName
+          display_name: displayName,
+          invite_code: inviteCode
         }
       }
     });
-    return { error };
+
+    // Se o cadastro foi bem-sucedido e há um código de convite, processar o convite
+    if (!error && data.user && inviteCode) {
+      try {
+        await processInviteCode(inviteCode, data.user.id);
+      } catch (inviteError) {
+        console.error('Erro ao processar código de convite:', inviteError);
+        // Não falha o cadastro se houver erro no convite
+      }
+    }
+
+    return { error, user: data.user };
+  };
+
+  const processInviteCode = async (code: string, newUserId: string) => {
+    try {
+      // Por enquanto, apenas validar o formato do código
+      if (!code || !code.startsWith('ORK-')) {
+        throw new Error('Código de convite inválido');
+      }
+
+      // Simular processamento bem-sucedido
+      console.log('Código de convite processado:', code, 'para usuário:', newUserId);
+      
+      // Dar pontos bônus para o novo usuário
+      await supabase
+        .from('profiles')
+        .update({ points: 100 }) // 100 pontos bônus por usar convite
+        .eq('id', newUserId);
+
+    } catch (error) {
+      console.error('Erro ao processar convite:', error);
+      throw error;
+    }
   };
 
   const signIn = async (email: string, password: string) => {
@@ -54,6 +88,16 @@ export const useAuth = () => {
     if (!error) {
       navigate('/dashboard');
     }
+    return { error };
+  };
+
+  const signInWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/dashboard`
+      }
+    });
     return { error };
   };
 
@@ -68,6 +112,7 @@ export const useAuth = () => {
     loading,
     signUp,
     signIn,
+    signInWithGoogle,
     signOut,
   };
 };
