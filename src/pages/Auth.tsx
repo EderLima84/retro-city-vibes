@@ -36,6 +36,14 @@ const Auth = () => {
   const inviteCodeFromUrl = searchParams.get('invite');
   
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>(inviteCodeFromUrl ? 'signup' : initialMode);
+  
+  // Debug log para verificar se os parâmetros estão sendo capturados
+  useEffect(() => {
+    if (inviteCodeFromUrl) {
+      console.log('Código de convite detectado:', inviteCodeFromUrl);
+      toast.success(`🎉 Código de convite detectado: ${inviteCodeFromUrl}`);
+    }
+  }, [inviteCodeFromUrl]);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
