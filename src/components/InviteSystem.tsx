@@ -128,7 +128,12 @@ export const InviteSystem: React.FC = () => {
   const shareViaWhatsApp = () => {
     if (!inviteCode || !user) return;
 
-    const inviteUrl = `${window.location.origin}/auth?invite=${inviteCode.code}`;
+    // Usar a URL da Vercel se estivermos em produção
+    const baseUrl = window.location.hostname.includes('vercel.app') 
+      ? `https://${window.location.hostname}` 
+      : window.location.origin;
+    
+    const inviteUrl = `${baseUrl}/auth?invite=${inviteCode.code}`;
     const message = `🎉 Você foi convidado para a Orkadia!
 
 🏠 Uma rede social nostálgica inspirada no Orkut
@@ -148,7 +153,12 @@ Venha fazer parte da nossa comunidade! 🚀`;
   const shareInviteLink = () => {
     if (!inviteCode) return;
 
-    const inviteUrl = `${window.location.origin}/auth?invite=${inviteCode.code}`;
+    // Usar a URL da Vercel se estivermos em produção
+    const baseUrl = window.location.hostname.includes('vercel.app') 
+      ? `https://${window.location.hostname}` 
+      : window.location.origin;
+    
+    const inviteUrl = `${baseUrl}/auth?invite=${inviteCode.code}`;
     navigator.clipboard.writeText(inviteUrl);
     toast.success('🔗 Link de convite copiado!');
   };
