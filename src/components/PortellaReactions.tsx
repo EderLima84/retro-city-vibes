@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-export type ReactionType = 'arretado' | 'oxente' | 'saudade' | 'conversa';
+export type ReactionType = 'love' | 'laugh' | 'wow' | 'sad' | 'angry' | 'fire';
 
 interface Reaction {
   type: ReactionType;
@@ -12,10 +12,12 @@ interface Reaction {
 }
 
 const reactions: Reaction[] = [
-  { type: 'arretado', emoji: '🌾', label: 'Arretado!', color: 'text-accent' },
-  { type: 'oxente', emoji: '🪗', label: 'Oxente!', color: 'text-secondary' },
-  { type: 'saudade', emoji: '🌙', label: 'Saudade', color: 'text-primary' },
-  { type: 'conversa', emoji: '☕', label: 'Boa conversa!', color: 'text-muted-foreground' },
+  { type: 'love', emoji: '❤️', label: 'Amor', color: 'text-red-500' },
+  { type: 'laugh', emoji: '😂', label: 'Haha', color: 'text-yellow-500' },
+  { type: 'fire', emoji: '🔥', label: 'Fogo', color: 'text-orange-500' },
+  { type: 'wow', emoji: '😮', label: 'Uau', color: 'text-yellow-500' },
+  { type: 'sad', emoji: '😢', label: 'Triste', color: 'text-blue-500' },
+  { type: 'angry', emoji: '😠', label: 'Raiva', color: 'text-red-600' },
 ];
 
 interface PortellaReactionsProps {
@@ -32,7 +34,7 @@ export const PortellaReactions = ({ postId, onReact, selectedReaction }: Portell
   };
 
   return (
-    <div className="flex items-center gap-2 flex-wrap">
+    <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
       {reactions.map((reaction) => {
         const isSelected = selectedReaction === reaction.type;
         
@@ -43,12 +45,15 @@ export const PortellaReactions = ({ postId, onReact, selectedReaction }: Portell
             size="sm"
             onClick={() => handleReaction(reaction.type)}
             className={cn(
-              "gap-1 transition-all hover:scale-110",
+              "gap-1 transition-all hover:scale-110 px-2 sm:px-3",
               isSelected && "shadow-glow"
             )}
           >
-            <span className="text-lg">{reaction.emoji}</span>
-            <span className={cn("text-xs font-medium", isSelected && "text-primary-foreground")}>
+            <span className="text-base sm:text-lg">{reaction.emoji}</span>
+            <span className={cn(
+              "text-xs font-medium hidden sm:inline",
+              isSelected && "text-primary-foreground"
+            )}>
               {reaction.label}
             </span>
           </Button>
