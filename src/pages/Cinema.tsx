@@ -236,19 +236,19 @@ export default function Cinema() {
       <CityNavigation />
 
       {/* Banner de Boas-vindas */}
-      <div className="container mx-auto px-4 pb-6">
-        <div className="bg-gradient-to-r from-primary/30 via-accent/30 to-primary/30 backdrop-blur-md border border-white/30 rounded-2xl py-6 px-8 text-center mb-6 shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 flex items-center gap-2">
-                <Film className="w-8 h-8 text-primary" />
-        Cinema Orkadia
+      <div className="container mx-auto px-3 sm:px-4 pb-4 sm:pb-6">
+        <div className="bg-gradient-to-r from-primary/30 via-accent/30 to-primary/30 backdrop-blur-md border border-white/30 rounded-xl sm:rounded-2xl py-4 sm:py-6 px-4 sm:px-8 text-center mb-4 sm:mb-6 shadow-lg">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-center sm:text-left">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-2 flex items-center justify-center sm:justify-start gap-2">
+                <Film className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
+                Cinema Orkadia
               </h2>
-              <p className="text-white/80 max-w-2xl">
+              <p className="text-white/80 text-sm sm:text-base max-w-2xl">
                 🎬 Onde cada história ganha luz no telão da cidade
               </p>
             </div>
-            <Button onClick={() => setShowUploadForm(!showUploadForm)} className="bg-primary hover:bg-primary/90">
+            <Button onClick={() => setShowUploadForm(!showUploadForm)} className="bg-primary hover:bg-primary/90 w-full sm:w-auto">
               <Upload className="w-4 h-4 mr-2" />
               Gravar seu curta!
             </Button>
@@ -345,57 +345,57 @@ export default function Cinema() {
       )}
 
       {/* Tabs de Filtros */}
-      <div className="container mx-auto px-4 py-4">
+      <div className="container mx-auto px-3 sm:px-4 py-2 sm:py-4">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4 bg-black/80 backdrop-blur-md border border-white/20 shadow-lg">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 bg-black/80 backdrop-blur-md border border-white/20 shadow-lg gap-1 h-auto p-1">
             <TabsTrigger 
               value="all" 
-              className="data-[state=active]:bg-primary data-[state=active]:text-white text-white/80 hover:text-white hover:bg-white/10 transition-all"
+              className="data-[state=active]:bg-primary data-[state=active]:text-white text-white/80 hover:text-white hover:bg-white/10 transition-all text-xs sm:text-sm py-2"
             >
-              <Film className="w-4 h-4 mr-2" />
+              <Film className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
               Todos
             </TabsTrigger>
             <TabsTrigger 
               value="trending" 
-              className="data-[state=active]:bg-primary data-[state=active]:text-white text-white/80 hover:text-white hover:bg-white/10 transition-all"
+              className="data-[state=active]:bg-primary data-[state=active]:text-white text-white/80 hover:text-white hover:bg-white/10 transition-all text-xs sm:text-sm py-2"
             >
-              <TrendingUp className="w-4 h-4 mr-2" />
+              <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
               Em Alta
             </TabsTrigger>
             <TabsTrigger 
               value="week" 
-              className="data-[state=active]:bg-primary data-[state=active]:text-white text-white/80 hover:text-white hover:bg-white/10 transition-all"
+              className="data-[state=active]:bg-primary data-[state=active]:text-white text-white/80 hover:text-white hover:bg-white/10 transition-all text-xs sm:text-sm py-2"
             >
-              <Award className="w-4 h-4 mr-2" />
-              Mais Assistidos
+              <Award className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              Mais Vistos
             </TabsTrigger>
             <TabsTrigger 
               value="recent" 
-              className="data-[state=active]:bg-primary data-[state=active]:text-white text-white/80 hover:text-white hover:bg-white/10 transition-all"
+              className="data-[state=active]:bg-primary data-[state=active]:text-white text-white/80 hover:text-white hover:bg-white/10 transition-all text-xs sm:text-sm py-2"
             >
-              <Clock className="w-4 h-4 mr-2" />
-              Estreias Recentes
+              <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              Estreias
             </TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
 
       {/* Feed de Vídeos Estilo Reels */}
-      <div className="container mx-auto px-4 pb-6">
+      <div className="container mx-auto px-3 sm:px-4 pb-6">
         {filteredVideos.length === 0 ? (
-          <Card className="p-12 text-center bg-black/70 backdrop-blur-md border-white/20 shadow-lg">
+          <Card className="p-8 sm:p-12 text-center bg-black/70 backdrop-blur-md border-white/20 shadow-lg">
             <div className="flex flex-col items-center gap-4">
-              <Film className="w-16 h-16 text-primary" />
+              <Film className="w-12 h-12 sm:w-16 sm:h-16 text-primary" />
               <div>
-                <h3 className="text-xl font-semibold mb-2 text-white">Nenhum vídeo encontrado</h3>
-                <p className="text-white/60">
+                <h3 className="text-lg sm:text-xl font-semibold mb-2 text-white">Nenhum vídeo encontrado</h3>
+                <p className="text-white/60 text-sm sm:text-base">
                   Seja o primeiro a projetar sua história no telão da cidade!
                 </p>
               </div>
             </div>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
             {filteredVideos.map((video, index) => (
               <Card key={video.id} className="group overflow-hidden bg-black/70 backdrop-blur-md border-white/20 hover:border-primary/50 transition-all shadow-lg">
                 <CardContent className="p-0 relative aspect-[9/16]">

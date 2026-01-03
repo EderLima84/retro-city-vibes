@@ -132,32 +132,32 @@ export default function Clubs() {
       <CityNavigation />
 
       {/* Banner de Boas-vindas */}
-      <div className="container mx-auto px-6 pb-8">
-        <div className="bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 border rounded-2xl p-8 mb-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-3 flex items-center justify-center gap-3">
-            <Sparkles className="w-8 h-8 text-primary" />
-        Clubes de Orkadia
-            <Sparkles className="w-8 h-8 text-primary" />
+      <div className="container mx-auto px-3 sm:px-6 pb-4 sm:pb-8">
+        <div className="bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 border rounded-xl sm:rounded-2xl p-4 sm:p-8 mb-4 sm:mb-8 text-center">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-2 sm:mb-3 flex items-center justify-center gap-2 sm:gap-3">
+            <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
+            Clubes de Orkadia
+            <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
           </h1>
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+          <p className="text-sm sm:text-lg text-muted-foreground max-w-3xl mx-auto">
             Os Clubes são o coração da cidade. Aqui, quem compartilha, cria laços — e quem cria, faz história.
           </p>
         </div>
       </div>
 
-      <div className="container mx-auto p-6 max-w-7xl">
+      <div className="container mx-auto p-3 sm:p-6 max-w-7xl">
 
-        <Tabs value={activeCategory} onValueChange={setActiveCategory} className="mb-6">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7">
+        <Tabs value={activeCategory} onValueChange={setActiveCategory} className="mb-4 sm:mb-6">
+          <TabsList className="grid w-full grid-cols-4 sm:grid-cols-7 gap-1 h-auto p-1">
             {categories.map((category) => (
-              <TabsTrigger key={category} value={category}>
+              <TabsTrigger key={category} value={category} className="text-xs sm:text-sm py-1.5 sm:py-2">
                 {category}
               </TabsTrigger>
             ))}
           </TabsList>
         </Tabs>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {filteredCommunities.map((community) => {
             const Icon = categoryIcons[community.category] || Heart;
             

@@ -465,13 +465,13 @@ export default function Explore() {
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       <CityNavigation />
       
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        <div className="space-y-6">
+      <main className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
+        <div className="space-y-4 sm:space-y-6">
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent mb-2">
+            <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent mb-2">
               🔍 Explorar Orkadia
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm sm:text-base text-muted-foreground">
               Encontre vizinhos e clubes na cidade digital — cumprimente, faça amizades e compartilhe afinidades!
             </p>
           </div>

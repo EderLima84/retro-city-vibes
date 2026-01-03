@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Achievement } from '../hooks/useGamification';
+
+interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  experience_reward: number;
+}
 
 interface AchievementNotificationProps {
   achievement: Achievement;
@@ -159,3 +167,5 @@ export const useAchievementNotifications = () => {
     NotificationContainer
   };
 };
+
+export type { Achievement };
