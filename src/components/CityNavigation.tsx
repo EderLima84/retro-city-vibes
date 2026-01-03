@@ -5,7 +5,7 @@ import { Home, Users, BookOpen, Film, Shield, Building2, LogOut, Search, Setting
 import { useAuth } from "@/hooks/useAuth";
 import OrkadiaLogo from "@/assets/Orkadia-logo.png";
 import { CityIcon } from "./CityIcon";
-import { NotificationBell } from "./NotificationBell";
+import { NotificationsPopover } from "./NotificationsPopover";
 import { ThemeSelector } from "./ThemeSelector";
 
 export const CityNavigation = () => {
@@ -43,7 +43,7 @@ export const CityNavigation = () => {
               onClick={() => navigate("/dashboard")}
             />
             <div className="flex items-center gap-4">
-              <NotificationBell />
+              <NotificationsPopover />
               <ThemeSelector />
               <Button
                 variant="ghost"

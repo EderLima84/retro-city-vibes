@@ -35,10 +35,12 @@ import { CitizenBadge, BadgeType } from "@/components/CitizenBadge";
 import { useSimpleGamification } from "@/hooks/useSimpleGamification";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { PullToRefreshIndicator } from "@/components/PullToRefreshIndicator";
+import { PortellaReactions, ReactionType } from "@/components/PortellaReactions";
 
 type Post = Tables<"posts"> & {
   profiles: Tables<"profiles">;
   user_liked?: boolean;
+  user_reaction?: ReactionType | null;
   badge?: BadgeType;
 };
 
@@ -259,6 +261,7 @@ const Feed = ({ setActiveSection }: { setActiveSection: (section: string) => voi
         if (user) {
           const postIds = postsData.map((p) => p.id);
           let likedPostIds = new Set<string>();
+          let reactionMap = new Map<string, ReactionType>();
 
           if (postIds.length > 0) {
             try {
@@ -271,11 +274,25 @@ const Feed = ({ setActiveSection }: { setActiveSection: (section: string) => voi
                 likedPostIds = new Set(likesData.map(like => like.post_id));
               }
             } catch (e) { console.log("Could not fetch likes"); }
+
+            try {
+              const { data: reactionsData } = await supabase
+                .from("post_reactions")
+                .select("post_id, type")
+                .eq("user_id", user.id)
+                .in("post_id", postIds);
+              if (reactionsData) {
+                reactionMap = new Map(
+                  reactionsData.map(r => [r.post_id, r.type as ReactionType])
+                );
+              }
+            } catch (e) { console.log("Could not fetch reactions"); }
           }
 
           const finalPosts = postsData.map(post => ({
             ...post,
             user_liked: likedPostIds.has(post.id),
+            user_reaction: reactionMap.get(post.id) || null,
           }));
 
 
@@ -292,7 +309,54 @@ const Feed = ({ setActiveSection }: { setActiveSection: (section: string) => voi
     }
   };
 
-  // Removed handleReact function since post_reactions table doesn't exist
+  const handleReact = async (postId: string, type: ReactionType) => {
+    try {
+      const { data: auth } = await supabase.auth.getUser();
+      const authUser = auth?.user;
+      if (!authUser) {
+        toast.error("Você precisa estar autenticado para reagir.");
+        return;
+      }
+
+      const { data: existingArr } = await supabase
+        .from("post_reactions")
+        .select("id, type")
+        .eq("post_id", postId)
+        .eq("user_id", authUser.id)
+        .limit(1);
+
+      const existing = existingArr?.[0];
+
+      if (existing && existing.type === type) {
+        // Remove reaction if same type clicked
+        await supabase
+          .from("post_reactions")
+          .delete()
+          .eq("id", existing.id);
+        setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, user_reaction: null } : p)));
+        toast.success("Reação removida");
+      } else if (existing) {
+        // Update reaction
+        await supabase
+          .from("post_reactions")
+          .update({ type })
+          .eq("id", existing.id);
+        setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, user_reaction: type } : p)));
+        toast.success("Reação atualizada!");
+      } else {
+        // Insert new reaction
+        await supabase
+          .from("post_reactions")
+          .insert({ post_id: postId, user_id: authUser.id, type });
+        setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, user_reaction: type } : p)));
+        toast.success(`Reagiu com ${type}!`);
+      }
+    } catch (error) {
+      console.error("Erro ao reagir:", error);
+      toast.error("Não foi possível registrar a reação");
+    }
+  };
+
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -815,8 +879,15 @@ const Feed = ({ setActiveSection }: { setActiveSection: (section: string) => voi
                     
                     {/* Interações */}
                     <div className="space-y-3 pt-4 border-t">
-                      {/* Like Button */}
-                      <div className="flex items-center gap-2">
+                      {/* Reactions */}
+                      <PortellaReactions 
+                        postId={post.id}
+                        selectedReaction={post.user_reaction}
+                        onReact={(type) => handleReact(post.id, type)}
+                      />
+                      
+                      {/* Like & Comment Buttons */}
+                      <div className="flex items-center gap-4">
                         <Button 
                           variant="ghost" 
                           size="sm" 
@@ -826,9 +897,7 @@ const Feed = ({ setActiveSection }: { setActiveSection: (section: string) => voi
                           <Heart className={`w-5 h-5 ${post.user_liked ? 'fill-current' : ''}`} />
                           <span>{post.likes_count || 0}</span>
                         </Button>
-                      </div>
-                      
-                      <div className="flex items-center gap-4">
+                        
                         <Button 
                           variant="ghost" 
                           size="sm" 
