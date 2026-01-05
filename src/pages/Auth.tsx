@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { Mail, Lock, User, Eye, EyeOff, Gift } from "lucide-react";
 import { ThemeSelector } from "@/components/ThemeSelector";
+import { ForgotPasswordDialog } from "@/components/ForgotPasswordDialog";
 import OrkadiaLogo from "@/assets/Orkadia-logo.png";
 
 const signupSchema = z.object({
@@ -36,6 +37,7 @@ const Auth = () => {
   const inviteCodeFromUrl = searchParams.get('invite');
   
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>(inviteCodeFromUrl ? 'signup' : initialMode);
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   
   // Debug log para verificar se os parâmetros estão sendo capturados
   useEffect(() => {
@@ -255,7 +257,8 @@ const Auth = () => {
                 <div className="text-center">
                   <button
                     type="button"
-                    className="text-sm text-muted-foreground hover:text-foreground"
+                    onClick={() => setForgotPasswordOpen(true)}
+                    className="text-sm text-muted-foreground hover:text-foreground hover:underline"
                   >
                     Esqueceu sua senha?
                   </button>
@@ -417,6 +420,11 @@ const Auth = () => {
           </div>
         </div>
       </div>
+
+      <ForgotPasswordDialog 
+        open={forgotPasswordOpen} 
+        onOpenChange={setForgotPasswordOpen} 
+      />
     </div>
   );
 };

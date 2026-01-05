@@ -25,6 +25,7 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import ClubPage from "./pages/ClubPage";
 import Invites from "./pages/Invites";
+import Settings from "./pages/Settings";
 import { Gamification } from "./pages/Gamification";
 
 const queryClient = new QueryClient();
@@ -60,6 +61,7 @@ const App = () => (
               <Route path="/explore" element={<Explore />} />
               <Route path="/messages" element={<Messages />} />
               <Route path="/privacy-settings" element={<PrivacySettings />} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/test-connection" element={<TestConnection />} />
