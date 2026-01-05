@@ -48,8 +48,8 @@ export const CityNavigation = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => navigate('/privacy-settings')}
-                title="Configurações de Privacidade"
+                onClick={() => navigate('/settings')}
+                title="Configurações"
               >
                 <Settings className="w-5 h-5" />
               </Button>
