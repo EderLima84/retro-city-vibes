@@ -5,9 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
+import { useInvites } from '@/hooks/useInvites';
 import { toast } from 'sonner';
 import { 
-  Share2, 
   Copy, 
   Users, 
   Gift, 
@@ -31,20 +31,19 @@ interface InviteCode {
 }
 
 interface InviteStats {
-  total_invites: number;
-  successful_invites: number;
-  pending_invites: number;
-  reward_points: number;
+  totalInvites: number;
+  successfulInvites: number;
+  rewardPoints: number;
 }
 
 export const InviteSystem: React.FC = () => {
   const { user } = useAuth();
+  const { generateInviteCode, getUserInviteCode, getInviteStats, loading: hookLoading } = useInvites();
   const [inviteCode, setInviteCode] = useState<InviteCode | null>(null);
   const [stats, setStats] = useState<InviteStats>({
-    total_invites: 0,
-    successful_invites: 0,
-    pending_invites: 0,
-    reward_points: 0
+    totalInvites: 0,
+    successfulInvites: 0,
+    rewardPoints: 0
   });
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -61,24 +60,15 @@ export const InviteSystem: React.FC = () => {
     try {
       setLoading(true);
 
-      // Por enquanto, simular dados até as tabelas serem criadas
-      const mockCode: InviteCode = {
-        id: '1',
-        code: `ORK-${user.id.slice(0, 4).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`,
-        created_at: new Date().toISOString(),
-        used_count: 0,
-        max_uses: 10,
-        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        is_active: true
-      };
+      // Load existing invite code
+      const existingCode = await getUserInviteCode();
+      if (existingCode) {
+        setInviteCode(existingCode);
+      }
 
-      setInviteCode(mockCode);
-      setStats({
-        total_invites: 0,
-        successful_invites: 0,
-        pending_invites: 0,
-        reward_points: 0
-      });
+      // Load stats
+      const inviteStats = await getInviteStats(user.id);
+      setStats(inviteStats);
 
     } catch (error) {
       console.error('Erro ao carregar dados de convite:', error);
@@ -88,31 +78,15 @@ export const InviteSystem: React.FC = () => {
     }
   };
 
-  const generateInviteCode = async () => {
+  const handleGenerateCode = async () => {
     if (!user) return;
 
     try {
       setGenerating(true);
-
-      // Gerar novo código único
-      const newCode = `ORK-${user.id.slice(0, 4).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
-      
-      const mockCode: InviteCode = {
-        id: Date.now().toString(),
-        code: newCode,
-        created_at: new Date().toISOString(),
-        used_count: 0,
-        max_uses: 10,
-        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        is_active: true
-      };
-
-      setInviteCode(mockCode);
-      toast.success('✨ Novo código de convite gerado!');
-
-    } catch (error) {
-      console.error('Erro ao gerar código:', error);
-      toast.error('Erro ao gerar código de convite');
+      const newCode = await generateInviteCode();
+      if (newCode) {
+        setInviteCode(newCode);
+      }
     } finally {
       setGenerating(false);
     }
@@ -128,11 +102,7 @@ export const InviteSystem: React.FC = () => {
   const shareViaWhatsApp = () => {
     if (!inviteCode || !user) return;
 
-    // Usar a URL da Vercel se estivermos em produção
-    const baseUrl = window.location.hostname.includes('vercel.app') 
-      ? `https://${window.location.hostname}` 
-      : window.location.origin;
-    
+    const baseUrl = window.location.origin;
     const inviteUrl = `${baseUrl}/auth?invite=${inviteCode.code}`;
     const message = `🎉 Você foi convidado para a Orkadia!
 
@@ -153,11 +123,7 @@ Venha fazer parte da nossa comunidade! 🚀`;
   const shareInviteLink = () => {
     if (!inviteCode) return;
 
-    // Usar a URL da Vercel se estivermos em produção
-    const baseUrl = window.location.hostname.includes('vercel.app') 
-      ? `https://${window.location.hostname}` 
-      : window.location.origin;
-    
+    const baseUrl = window.location.origin;
     const inviteUrl = `${baseUrl}/auth?invite=${inviteCode.code}`;
     navigator.clipboard.writeText(inviteUrl);
     toast.success('🔗 Link de convite copiado!');
@@ -194,23 +160,23 @@ Venha fazer parte da nossa comunidade! 🚀`;
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="text-center p-4">
           <Users className="w-6 h-6 text-primary mx-auto mb-2" />
-          <p className="text-2xl font-bold text-primary">{stats.successful_invites}</p>
+          <p className="text-2xl font-bold text-primary">{stats.successfulInvites}</p>
           <p className="text-xs text-muted-foreground">Convites Aceitos</p>
         </Card>
         <Card className="text-center p-4">
           <Star className="w-6 h-6 text-secondary mx-auto mb-2" />
-          <p className="text-2xl font-bold text-secondary">{stats.reward_points}</p>
+          <p className="text-2xl font-bold text-secondary">{stats.rewardPoints}</p>
           <p className="text-xs text-muted-foreground">Pontos Ganhos</p>
         </Card>
         <Card className="text-center p-4">
           <Trophy className="w-6 h-6 text-accent mx-auto mb-2" />
-          <p className="text-2xl font-bold text-accent">{Math.floor(stats.successful_invites / 5)}</p>
+          <p className="text-2xl font-bold text-accent">{Math.floor(stats.successfulInvites / 5)}</p>
           <p className="text-xs text-muted-foreground">Conquistas</p>
         </Card>
         <Card className="text-center p-4">
           <Crown className="w-6 h-6 text-yellow-500 mx-auto mb-2" />
           <p className="text-2xl font-bold text-yellow-600">
-            {stats.successful_invites >= 10 ? 'VIP' : stats.successful_invites >= 5 ? 'PRO' : 'NOVO'}
+            {stats.successfulInvites >= 10 ? 'VIP' : stats.successfulInvites >= 5 ? 'PRO' : 'NOVO'}
           </p>
           <p className="text-xs text-muted-foreground">Status</p>
         </Card>
@@ -245,9 +211,11 @@ Venha fazer parte da nossa comunidade! 🚀`;
                 <Badge variant="secondary">
                   Usos: {inviteCode.used_count}/{inviteCode.max_uses}
                 </Badge>
-                <Badge variant="outline">
-                  Expira: {new Date(inviteCode.expires_at!).toLocaleDateString('pt-BR')}
-                </Badge>
+                {inviteCode.expires_at && (
+                  <Badge variant="outline">
+                    Expira: {new Date(inviteCode.expires_at).toLocaleDateString('pt-BR')}
+                  </Badge>
+                )}
                 <Badge variant={inviteCode.is_active ? "default" : "destructive"}>
                   {inviteCode.is_active ? 'Ativo' : 'Inativo'}
                 </Badge>
@@ -264,7 +232,7 @@ Venha fazer parte da nossa comunidade! 🚀`;
                   <ExternalLink className="w-4 h-4" />
                   Copiar Link
                 </Button>
-                <Button variant="outline" onClick={generateInviteCode} disabled={generating} className="gap-2">
+                <Button variant="outline" onClick={handleGenerateCode} disabled={generating || hookLoading} className="gap-2">
                   <RefreshCw className={`w-4 h-4 ${generating ? 'animate-spin' : ''}`} />
                   Novo Código
                 </Button>
@@ -276,7 +244,7 @@ Venha fazer parte da nossa comunidade! 🚀`;
               <p className="text-muted-foreground mb-4">
                 Você ainda não tem um código de convite
               </p>
-              <Button onClick={generateInviteCode} disabled={generating} className="gap-2">
+              <Button onClick={handleGenerateCode} disabled={generating || hookLoading} className="gap-2">
                 <Gift className="w-4 h-4" />
                 {generating ? 'Gerando...' : 'Gerar Código'}
               </Button>
