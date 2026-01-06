@@ -1,0 +1,26 @@
+{
+  "name": "Orkadia",
+  "short_name": "Orkadia",
+  "description": "Onde as conexões voltam a ser humanas - Rede social inspirada no Orkut",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#d97706",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/Orkadia-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/Orkadia-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["social", "entertainment"],
+  "lang": "pt-BR"
+}
