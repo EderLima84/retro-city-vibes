@@ -521,6 +521,19 @@ const Feed = ({ setActiveSection }: { setActiveSection: (section: string) => voi
     toast.success("Link copiado para a área de transferência!");
   };
 
+  // Pull to refresh handler - MUST be called before any conditional returns
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([loadPosts(), loadRanking(), loadAnnouncements()]);
+    toast.success("Feed atualizado!");
+  }, []);
+
+  const { pullDistance, isRefreshing, progress, shouldTrigger } = usePullToRefresh({
+    onRefresh: handleRefresh,
+    threshold: 80
+  });
+
+  const greeting = getGreeting();
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -535,19 +548,6 @@ const Feed = ({ setActiveSection }: { setActiveSection: (section: string) => voi
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
-
-  const greeting = getGreeting();
-
-  // Pull to refresh handler
-  const handleRefresh = useCallback(async () => {
-    await Promise.all([loadPosts(), loadRanking(), loadAnnouncements()]);
-    toast.success("Feed atualizado!");
-  }, []);
-
-  const { pullDistance, isRefreshing, progress, shouldTrigger } = usePullToRefresh({
-    onRefresh: handleRefresh,
-    threshold: 80
-  });
 
   return (
     <div className="min-h-screen py-4 sm:py-8">
